@@ -1,83 +1,129 @@
-# ssher
+<p align="center">
+  <img src="logo.png" alt="ssher — Ultimate SSH Configuration Manager" width="480">
+</p>
 
-**Ultimate SSH Configuration Manager** — a single-binary CLI for managing SSH server configurations, with native SSH auth and a drop-in `sshpass` replacement.
+<p align="center">
+  <em>The SSH config manager that <b>actually</b> remembers your servers.</em>
+</p>
 
-Save your servers once, connect with `ssher prod` or `ssher 3`, and run commands across many servers in parallel. The vault is encrypted with AES-256-GCM and Argon2id.
+<p align="center">
+  <a href="https://pkg.go.dev/github.com/johnniewhite/ssher"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/johnniewhite/ssher.svg"></a>
+  <a href="https://goreportcard.com/report/github.com/johnniewhite/ssher"><img alt="Go Report" src="https://goreportcard.com/badge/github.com/johnniewhite/ssher"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux-lightgrey">
+</p>
+
+---
+
+`ssher` is a single-binary SSH companion. It keeps your servers in an encrypted vault, lets you connect with one word, runs commands across fleets in parallel, transfers files over native SFTP, and ships a drop-in replacement for `sshpass` — all without spawning the system `ssh` binary or shelling passwords through `pexpect`.
+
+```text
+$ ssher prod
+[i] (matched alias -> production-web)
+[ok] connected to production-web (deploy@10.0.4.21:22)
+deploy@web1:~$
+```
+
+## Highlights
+
+- **One word to connect.** `ssher prod`, `ssher 3`, `ssher pw` — name, index, alias, or fuzzy match.
+- **Native SSH stack.** Authenticates with `golang.org/x/crypto/ssh` directly. No spawned `ssh`, no pexpect, no shell-string injection.
+- **Encrypted vault.** AES‑256‑GCM with Argon2id KDF; parameters live in the file header so costs can ratchet upward over time.
+- **Parallel fleet exec.** `ssher exec "uptime" --all` fans out across servers via goroutines.
+- **`sshpass` replacement.** `ssher wrap` wraps any SSH-shaped command and feeds the password through a PTY at the prompt.
+- **Recordings.** `ssher prod --record` captures asciicast v2 you can replay with `ssher record replay`.
+- **Quality of life.** Profiles, aliases, favorites, groups, clipboard copy, CSV/JSON import-export, shell completion, `~/.ssh/config` export.
+- **Drop-in upgrade path.** `ssher import-legacy` migrates a Python-version Fernet vault in one shot.
 
 ## Install
 
-### From source
-
 ```bash
+# Latest from source (recommended while we stabilise)
 go install github.com/johnniewhite/ssher@latest
+
+# Pre-built binary (macOS arm64 shown; swap for your OS/arch)
+curl -LO https://github.com/johnniewhite/ssher/releases/latest/download/ssher_Darwin_arm64.tar.gz
+tar -xzf ssher_Darwin_arm64.tar.gz && sudo mv ssher /usr/local/bin/
 ```
 
-### Pre-built binaries
-
-Grab a release archive from the [GitHub releases page](https://github.com/johnniewhite/ssher/releases) for your OS/arch:
+If `ssher` isn't found after `go install`, your `$GOBIN` isn't on `$PATH`. Add this to `~/.zshrc` (or your shell's equivalent):
 
 ```bash
-# macOS arm64 example
-curl -LO https://github.com/johnniewhite/ssher/releases/latest/download/ssher_Darwin_arm64.tar.gz
-tar -xzf ssher_Darwin_arm64.tar.gz
-sudo mv ssher /usr/local/bin/
+export PATH="$HOME/go/bin:$PATH"
 ```
 
-## Usage
+Enable shell completion:
+
+```bash
+# zsh
+eval "$(ssher completion zsh)"
+# bash
+eval "$(ssher completion bash)"
+```
+
+## Quick tour
 
 ```bash
 ssher                          # interactive menu
-ssher add                      # add a server (form prompts)
-ssher list                     # list all servers
-ssher 3                        # connect to server #3 in the list
-ssher prod                     # connect by name / alias / fuzzy match
+ssher add                      # add a server with a form
+ssher list                     # see what you've got
+ssher prod                     # connect by name / alias / fuzzy / index
 ssher prod --reconnect         # auto-reconnect on disconnect
 ssher prod --record            # capture asciicast v2 recording
+```
 
-# Multi-server execution (parallel)
+### Run things across servers
+
+```bash
 ssher exec "uptime" --all
-ssher exec "df -h" -g production
-ssher exec "whoami" -s web1,web2
+ssher exec "df -h" --group production
+ssher exec "whoami" --servers web1,web2,db1
+```
 
-# Transfers
-ssher upload local.tar.gz /var/tmp/ -s prod
+### Transfer files
+
+```bash
+ssher upload  ./build.tar.gz /var/tmp/  -s prod
 ssher download /var/log/syslog ./syslog -s prod
-ssher sync ./build/ /srv/app/ -s prod --delete
+ssher sync   ./public/ /srv/www/ -s prod --delete   # rsync, key auth only
+```
 
-# sshpass replacement
-ssher wrap -e ssh user@host                  # password from $SSHPASS
-ssher wrap -f /path/to/pw scp file user@host:
-ssher wrap -P "Enter passphrase:" git push   # custom prompt
+### Drop-in `sshpass`
 
-# Vault
+```bash
+ssher wrap -e ssh user@host                       # password from $SSHPASS
+ssher wrap -f /etc/secret/pw scp file user@host:  # password from a file
+ssher wrap -P "Enter passphrase:" git push        # custom prompt
+```
+
+### Vault management
+
+```bash
 ssher vault status
-ssher vault unlock | lock | change-password
-
-# Migrating from the Python version
-ssher import-legacy                          # one-shot Fernet -> new format
+ssher vault lock | unlock | change-password
+ssher backup                                # snapshot ~/.ssher/vault.bin
+ssher import-legacy                         # one-shot Fernet -> new format
 ```
 
-## Why a Go rewrite?
+Run `ssher --help` to see every subcommand.
 
-The Python predecessor at `8527ca2` shipped a working tool but every SSH operation went through `pexpect` to inject passwords into a spawned `ssh` binary. The Go version uses `golang.org/x/crypto/ssh` and authenticates natively — no pexpect, no spawned `ssh`, no shell-string assembly. That gives us:
+## How it works
 
-- A single static binary (no `pip install` dance).
-- Native password and key auth, including via `ssh-agent`.
-- Real concurrency for `exec` across many servers (goroutines, not Python threads).
-- Proper jump-host chains via `ssh.Dial` over an existing connection.
-- Native local/remote port forwarding.
+`ssher` talks SSH directly via [`golang.org/x/crypto/ssh`](https://pkg.go.dev/golang.org/x/crypto/ssh) — there is no embedded or spawned `ssh` process for the connect, exec, and SFTP paths. That choice gives you native auth (password, key file, `ssh-agent`), real goroutine concurrency, jump-host chains via `ssh.Dial` over an existing connection, and native local/remote port forwarding.
 
-The one place pexpect-equivalent logic survives is `ssher wrap`, which by definition wraps an arbitrary user-supplied SSH-shaped command and has no other choice. That code lives in `internal/pty/` and is the *only* PTY-injection code in the project.
+The one exception is `ssher wrap`, which by definition wraps an arbitrary user-supplied command and must use a PTY + prompt-scanner. That logic is fully isolated to `internal/pty/` and used nowhere else in the codebase.
 
-### What you give up
+### Trade-offs you should know
 
-`golang.org/x/crypto/ssh` does not honour `~/.ssh/config`. Host aliases, `ProxyJump`, `ControlMaster`, `Include`, `Match`, etc. defined there will be ignored when ssher dials directly. ssher implements what its data model needs (jump host as a saved server, port forwarding from per-server `local_forwards`/`remote_forwards`) and exposes the rest via `ssher export-config`, which writes an `~/.ssh/config` snippet you can paste in.
+| Limitation | Why | Workaround |
+| --- | --- | --- |
+| `~/.ssh/config` directives (`ProxyCommand`, `ControlMaster`, `Match`, etc.) aren't honoured | Native dial, no `ssh(1)` involvement | `ssher export-config` writes an `~/.ssh/config` snippet for tools that *do* read it |
+| `rsync` requires SSH key auth | We shell out to `rsync(1)` and don't currently inject passwords into its child SSH | Use `ssher upload` / `ssher download` (SFTP) for password-auth servers |
+| Encrypted private keys aren't unlocked | No passphrase prompt yet | Use an unencrypted key, or load it into `ssh-agent` first |
 
-`rsync` shells out to the system `rsync`, which means **rsync currently requires SSH key auth**. Password-auth servers will see rsync prompt and fail. SCP/SFTP work fine for password-auth servers — the password is fed through the native SSH session, not a child process.
+## Security model
 
-## Vault format (v1)
-
-```
+```text
 [ magic       "SSHV"            4 B ]
 [ version     1                  1 B ]
 [ kdf_id      argon2id (=1)      1 B ]
@@ -89,21 +135,28 @@ The one place pexpect-equivalent logic survives is `ssher wrap`, which by defini
 [ ciphertext  AES-256-GCM(gzip(json)) + 16 B tag ]
 ```
 
-Plaintext is gzipped JSON containing servers, profiles, aliases, and history together. Argon2id parameters are stored in the header so we can ratchet costs over time without breaking existing vaults.
-
-State on disk:
+- The plaintext payload is gzipped JSON containing servers, profiles, aliases, and history together.
+- Argon2id parameters are stored in the header, so costs can ratchet upward without breaking existing vaults.
+- The master password is **never** written to disk. The session file caches an Argon2id-derived key, wrapped with a host-bound HKDF key — exfiltrating `~/.ssher/.session` alone doesn't get you the vault.
+- Plaintext exports (`export-csv`, default `export-json`) **omit passwords**. `--include-passwords` is the explicit opt-in.
 
 | Path | Mode | Contents |
 | --- | --- | --- |
 | `~/.ssher/vault.bin` | `0600` | the encrypted vault |
-| `~/.ssher/.session` | `0600` | cached vault key, host-bound, 30-min expiry |
+| `~/.ssher/.session` | `0600` | cached vault key, host-bound, 30-minute expiry |
 | `~/.ssher/recordings/*.cast` | `0600` | asciicast v2 session recordings |
-| `~/.ssher/backups/vault-*.bin` | `0600` | snapshots from `ssher backup` |
+| `~/.ssher/backups/vault-*.bin` | `0600` | `ssher backup` snapshots |
+
+## Roadmap
+
+- **Workspaces** — share an encrypted server list across a small team, in design now.
+- **Encrypted-key passphrase prompts** for the connect path.
+- **Password injection for `rsync`** via the same PTY layer that powers `wrap`.
 
 ## License
 
-MIT — see `LICENSE`.
+[MIT](LICENSE).
 
 ## Author
 
-Originally written in Python by Inioluwa Adeyinka. Go rewrite in this tree.
+Built by [@johnniewhite](https://github.com/johnniewhite).
