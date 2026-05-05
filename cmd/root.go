@@ -14,7 +14,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const Version = "0.1.0-dev"
+// Version is overridden at release time via -ldflags '-X .../cmd.Version=...'
+// (set by goreleaser). Must be a var, not a const — the linker's -X flag only
+// works on string variables.
+var Version = "0.1.0-dev"
 
 var rootCmd = &cobra.Command{
 	Use:           "ssher [target]",

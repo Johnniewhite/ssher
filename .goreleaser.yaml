@@ -33,6 +33,22 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
+brews:
+  - name: ssher
+    repository:
+      owner: johnniewhite
+      name: homebrew-ssher
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/johnniewhite/ssher"
+    description: "Ultimate SSH configuration manager + sshpass replacement"
+    license: "MIT"
+    install: |
+      bin.install "ssher"
+    test: |
+      system "#{bin}/ssher --version"
+
 snapshot:
   version_template: "{{ incpatch .Version }}-snapshot"
 
