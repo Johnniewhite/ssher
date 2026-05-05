@@ -37,16 +37,31 @@ deploy@web1:~$
 
 ## Install
 
-```bash
-# Latest from source (recommended while we stabilise)
-go install github.com/johnniewhite/ssher@latest
+### Homebrew (macOS — recommended)
 
-# Pre-built binary (macOS arm64 shown; swap for your OS/arch)
+```bash
+brew tap johnniewhite/ssher
+brew install ssher
+```
+
+Upgrade with `brew update && brew upgrade ssher`. Also works on Linux via [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux).
+
+### Pre-built binary
+
+```bash
+# macOS arm64 shown; swap the asset name for your OS/arch
+# (Darwin_arm64, Darwin_amd64, Linux_amd64, Linux_arm64)
 curl -LO https://github.com/johnniewhite/ssher/releases/latest/download/ssher_Darwin_arm64.tar.gz
 tar -xzf ssher_Darwin_arm64.tar.gz && sudo mv ssher /usr/local/bin/
 ```
 
-If `ssher` isn't found after `go install`, your `$GOBIN` isn't on `$PATH`. Add this to `~/.zshrc` (or your shell's equivalent):
+### From source
+
+```bash
+go install github.com/johnniewhite/ssher@latest
+```
+
+If `ssher` isn't found afterwards, `$GOBIN` isn't on `$PATH`. Add to `~/.zshrc` (or your shell's equivalent):
 
 ```bash
 export PATH="$HOME/go/bin:$PATH"
