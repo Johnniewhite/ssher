@@ -34,14 +34,13 @@ func (c *Client) Close() error {
 	if c == nil {
 		return nil
 	}
-	if err := c.SSH.Close(); err != nil {
-		_ = c.closer()
-		return err
-	}
+	err := c.SSH.Close()
 	if c.closer != nil {
-		return c.closer()
+		if cerr := c.closer(); err == nil {
+			err = cerr
+		}
 	}
-	return nil
+	return err
 }
 
 // Dial connects to a server, walking the JumpHost chain if any.
