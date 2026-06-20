@@ -13,6 +13,10 @@ import (
 	"github.com/johnniewhite/ssher/internal/ui"
 )
 
+// defaultPingParallel is the default and fallback concurrency for `ping`. Kept
+// as a single constant so the flag default and the tcpPingAll fallback agree.
+const defaultPingParallel = 16
+
 var pingTimeout int
 var pingParallel int
 
@@ -40,7 +44,7 @@ var pingCmd = &cobra.Command{
 
 func init() {
 	pingCmd.Flags().IntVar(&pingTimeout, "timeout", 5, "TCP connect timeout (seconds)")
-	pingCmd.Flags().IntVarP(&pingParallel, "parallel", "p", 16, "max concurrent probes")
+	pingCmd.Flags().IntVarP(&pingParallel, "parallel", "p", defaultPingParallel, "max concurrent probes")
 	rootCmd.AddCommand(pingCmd)
 }
 
@@ -52,7 +56,7 @@ type pingResult struct {
 
 func tcpPingAll(servers []store.Server, timeout time.Duration, parallelism int) []pingResult {
 	if parallelism <= 0 {
-		parallelism = 8
+		parallelism = defaultPingParallel
 	}
 	sem := make(chan struct{}, parallelism)
 	results := make([]pingResult, len(servers))

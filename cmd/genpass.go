@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,7 @@ var (
 	genExclude    string
 	genCount      int
 	genCopy       bool
+	genClearAfter time.Duration
 )
 
 var genpassCmd = &cobra.Command{
@@ -50,7 +52,12 @@ var genpassCmd = &cobra.Command{
 			if err := clipboard.Copy(last); err != nil {
 				return err
 			}
-			fmt.Println(ui.Successf("last password copied to clipboard"))
+			msg := "last password copied to clipboard"
+			if genClearAfter > 0 {
+				spawnClipboardClear(last, genClearAfter)
+				msg += fmt.Sprintf(" (clears in %s)", genClearAfter)
+			}
+			fmt.Println(ui.Successf(msg))
 		}
 		return nil
 	},
@@ -65,5 +72,6 @@ func init() {
 	genpassCmd.Flags().StringVar(&genExclude, "exclude", "", "characters to exclude")
 	genpassCmd.Flags().IntVarP(&genCount, "count", "n", 1, "generate N passwords")
 	genpassCmd.Flags().BoolVarP(&genCopy, "clipboard", "c", false, "copy last generated password to clipboard")
+	genpassCmd.Flags().DurationVar(&genClearAfter, "clear-after", clipClearTTL, "auto-clear the copied password after this long (0 disables)")
 	rootCmd.AddCommand(genpassCmd)
 }

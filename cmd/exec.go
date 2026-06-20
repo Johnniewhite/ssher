@@ -13,6 +13,11 @@ import (
 	"github.com/johnniewhite/ssher/internal/ui"
 )
 
+// defaultExecParallel is the default and fallback concurrency for `exec` and
+// for the interactive exec flow. Kept as a single constant so the flag default
+// and the runOnAll fallback can't drift apart.
+const defaultExecParallel = 8
+
 var (
 	execAll      bool
 	execGroup    string
@@ -50,7 +55,7 @@ func init() {
 	execCmd.Flags().BoolVar(&execAll, "all", false, "run on all servers")
 	execCmd.Flags().StringVarP(&execGroup, "group", "g", "", "run on servers in this group")
 	execCmd.Flags().StringSliceVarP(&execServers, "servers", "s", nil, "comma-separated server names/indices")
-	execCmd.Flags().IntVarP(&execParallel, "parallel", "p", 8, "max concurrent connections")
+	execCmd.Flags().IntVarP(&execParallel, "parallel", "p", defaultExecParallel, "max concurrent connections")
 	rootCmd.AddCommand(execCmd)
 }
 
@@ -85,7 +90,7 @@ type execResult struct {
 
 func runOnAll(v *store.Vault, targets []store.Server, cmdline string, parallelism int) []execResult {
 	if parallelism <= 0 {
-		parallelism = 4
+		parallelism = defaultExecParallel
 	}
 	sem := make(chan struct{}, parallelism)
 	results := make([]execResult, len(targets))

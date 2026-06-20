@@ -22,9 +22,6 @@ var syncCmd = &cobra.Command{
 	Short: "Rsync between local and remote (key auth only)",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(c *cobra.Command, args []string) error {
-		if syncServer == "" {
-			return fmt.Errorf("--server is required")
-		}
 		saved, err := ui.LoadVault()
 		if err != nil {
 			return err
@@ -50,6 +47,7 @@ var syncCmd = &cobra.Command{
 
 func init() {
 	syncCmd.Flags().StringVarP(&syncServer, "server", "s", "", "target server")
+	_ = syncCmd.MarkFlagRequired("server")
 	syncCmd.Flags().BoolVar(&syncPull, "pull", false, "remote -> local instead of local -> remote")
 	syncCmd.Flags().BoolVar(&syncDelete, "delete", false, "delete files at destination not present at source")
 	syncCmd.Flags().BoolVar(&syncDryRun, "dry-run", false, "show what would be transferred")
