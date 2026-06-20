@@ -12,7 +12,23 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+
+	sshc "github.com/johnniewhite/ssher/internal/ssh"
+	"github.com/johnniewhite/ssher/internal/ui"
 )
+
+func init() {
+	// Let the SSH layer prompt for an encrypted private key's passphrase.
+	// internal/ssh stays UI-free; this hook bridges it to the interactive
+	// password reader.
+	sshc.PassphrasePrompt = func(keyPath string) ([]byte, error) {
+		pw, err := ui.PromptPassword(fmt.Sprintf("Passphrase for %s: ", keyPath))
+		if err != nil {
+			return nil, err
+		}
+		return []byte(pw), nil
+	}
+}
 
 // Version is overridden at release time via -ldflags '-X .../cmd.Version=...'
 // (set by goreleaser). Must be a var, not a const — the linker's -X flag only

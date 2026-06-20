@@ -17,9 +17,6 @@ var downloadCmd = &cobra.Command{
 	Short: "Download a file or directory via SFTP",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(c *cobra.Command, args []string) error {
-		if downloadServer == "" {
-			return fmt.Errorf("--server is required")
-		}
 		saved, err := ui.LoadVault()
 		if err != nil {
 			return err
@@ -45,5 +42,6 @@ var downloadCmd = &cobra.Command{
 
 func init() {
 	downloadCmd.Flags().StringVarP(&downloadServer, "server", "s", "", "source server (name, alias, or index)")
+	_ = downloadCmd.MarkFlagRequired("server")
 	rootCmd.AddCommand(downloadCmd)
 }

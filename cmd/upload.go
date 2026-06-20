@@ -17,9 +17,6 @@ var uploadCmd = &cobra.Command{
 	Short: "Upload a file or directory via SFTP",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(c *cobra.Command, args []string) error {
-		if uploadServer == "" {
-			return fmt.Errorf("--server is required")
-		}
 		saved, err := ui.LoadVault()
 		if err != nil {
 			return err
@@ -45,5 +42,6 @@ var uploadCmd = &cobra.Command{
 
 func init() {
 	uploadCmd.Flags().StringVarP(&uploadServer, "server", "s", "", "target server (name, alias, or index)")
+	_ = uploadCmd.MarkFlagRequired("server")
 	rootCmd.AddCommand(uploadCmd)
 }

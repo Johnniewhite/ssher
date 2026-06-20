@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -11,6 +12,7 @@ import (
 )
 
 var copyField string
+var copyClearAfter time.Duration
 
 var copyCmd = &cobra.Command{
 	Use:   "copy <target>",
@@ -52,12 +54,19 @@ Default field is "command".`,
 		if err := clipboard.Copy(text); err != nil {
 			return err
 		}
-		fmt.Println(ui.Successf(fmt.Sprintf("copied %s of %s to clipboard", copyField, target.Name)))
+		msg := fmt.Sprintf("copied %s of %s to clipboard", copyField, target.Name)
+		// Don't let a stored password linger on the clipboard.
+		if copyField == "password" && copyClearAfter > 0 {
+			spawnClipboardClear(text, copyClearAfter)
+			msg += fmt.Sprintf(" (clears in %s)", copyClearAfter)
+		}
+		fmt.Println(ui.Successf(msg))
 		return nil
 	},
 }
 
 func init() {
 	copyCmd.Flags().StringVar(&copyField, "field", "command", "host|user|password|command")
+	copyCmd.Flags().DurationVar(&copyClearAfter, "clear-after", clipClearTTL, "auto-clear a copied password after this long (0 disables)")
 	rootCmd.AddCommand(copyCmd)
 }

@@ -22,6 +22,12 @@ import (
 	"github.com/johnniewhite/ssher/internal/store"
 )
 
+// PassphrasePrompt, when set, is called to obtain the passphrase for an
+// encrypted private key. It's a hook (nil by default) so this package stays
+// free of a hard dependency on the interactive UI layer and remains testable
+// without a TTY. cmd/root.go wires it to the ui password prompt.
+var PassphrasePrompt func(keyPath string) ([]byte, error)
+
 // Client wraps an *ssh.Client and remembers the *underlying* network conn so
 // callers chaining jump hosts can close the whole stack on shutdown.
 type Client struct {
@@ -144,9 +150,23 @@ func authMethods(s *store.Server) ([]ssh.AuthMethod, error) {
 		}
 		signer, err := ssh.ParsePrivateKey(key)
 		if err != nil {
-			// Common case: passphrase-protected key. We don't currently
-			// prompt for the passphrase -- documented limitation, easy to
-			// extend later by checking for *ssh.PassphraseMissingError.
+			// Passphrase-protected key: prompt (if a prompt hook is wired)
+			// and retry with the passphrase. ssh.ParsePrivateKey reports this
+			// via *ssh.PassphraseMissingError.
+			var pmErr *ssh.PassphraseMissingError
+			if errors.As(err, &pmErr) && PassphrasePrompt != nil {
+				if pass, perr := PassphrasePrompt(path); perr == nil && len(pass) > 0 {
+					signer, err = ssh.ParsePrivateKeyWithPassphrase(key, pass)
+				}
+			}
+		}
+		if err != nil {
+			// Couldn't use the key directly (still encrypted, or otherwise
+			// unparseable). Fall back to the agent if it can vouch for us
+			// before giving up entirely.
+			if agentAuth, aerr := agentAuthMethod(); aerr == nil {
+				return []ssh.AuthMethod{agentAuth}, nil
+			}
 			return nil, fmt.Errorf("parse key %s: %w", path, err)
 		}
 		// Also try the SSH agent if available; lots of users keep their

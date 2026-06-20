@@ -8,7 +8,9 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
+	sshc "github.com/johnniewhite/ssher/internal/ssh"
 	"github.com/johnniewhite/ssher/internal/store"
+	"github.com/johnniewhite/ssher/internal/transfer"
 	"github.com/johnniewhite/ssher/internal/ui"
 )
 
@@ -104,8 +106,7 @@ func runInteractive(c *cobra.Command, args []string) error {
 			printHelpReference()
 			pause()
 		case "t", "transfer":
-			fmt.Println(ui.Muted.Render("file transfer in interactive mode is not yet wired up — use `ssher upload` / `ssher download` from the CLI"))
-			pause()
+			handleTransferFlow(saved)
 		default:
 			// Try as fuzzy server target.
 			if err := runConnect(c, []string{input}); err != nil {
@@ -196,8 +197,64 @@ func handleExecFlow(saved *store.Saved) {
 	if cmdline == "" {
 		return
 	}
-	results := runOnAll(saved.Vault, saved.Vault.SortedServers(), cmdline, 8)
+	results := runOnAll(saved.Vault, saved.Vault.SortedServers(), cmdline, defaultExecParallel)
 	printExecResults(results)
+	pause()
+}
+
+func handleTransferFlow(saved *store.Saved) {
+	target, err := pickServer(saved, "Transfer to/from which server?")
+	if err != nil || target == nil {
+		return
+	}
+
+	direction := "upload"
+	if err := huh.NewSelect[string]().
+		Title("Direction").
+		Options(
+			huh.NewOption("upload (local → remote)", "upload"),
+			huh.NewOption("download (remote → local)", "download"),
+		).
+		Value(&direction).
+		Run(); err != nil {
+		return
+	}
+
+	var local, remote string
+	if err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().Title("Local path").Value(&local),
+			huh.NewInput().Title("Remote path").Value(&remote),
+		),
+	).Run(); err != nil {
+		return
+	}
+	if strings.TrimSpace(local) == "" || strings.TrimSpace(remote) == "" {
+		fmt.Println(ui.Warnf("both local and remote paths are required"))
+		pause()
+		return
+	}
+
+	client, err := sshc.Dial(saved.Vault, target)
+	if err != nil {
+		printErr(err)
+		pause()
+		return
+	}
+	defer client.Close()
+
+	if direction == "upload" {
+		fmt.Println(ui.Infof(fmt.Sprintf("uploading %s -> %s:%s", local, target.Name, remote)))
+		err = transfer.Upload(client, local, remote)
+	} else {
+		fmt.Println(ui.Infof(fmt.Sprintf("downloading %s:%s -> %s", target.Name, remote, local)))
+		err = transfer.Download(client, remote, local)
+	}
+	if err != nil {
+		printErr(err)
+	} else {
+		fmt.Println(ui.Successf("transfer complete"))
+	}
 	pause()
 }
 
@@ -269,6 +326,7 @@ func printHelpReference() {
 	fmt.Println("  f          toggle favorite on a server")
 	fmt.Println("  g          list groups")
 	fmt.Println("  s          search servers")
+	fmt.Println("  t          transfer files (upload/download)")
 	fmt.Println("  x          run a command on all servers")
 	fmt.Println("  p          TCP-ping all servers")
 	fmt.Println("  c          copy server details to clipboard")
