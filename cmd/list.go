@@ -24,7 +24,7 @@ var listCmd = &cobra.Command{
 			return err
 		}
 		view := saved.Vault.SortedServers()
-		view = filterServers(view, listGroup, listFavoritesOnly, listSearch)
+		view = filterServers(view, saved.Vault.Aliases, listGroup, listFavoritesOnly, listSearch)
 
 		fmt.Println(ui.Title.Render(fmt.Sprintf("Saved servers (%d)", len(view))))
 		fmt.Println(ui.RenderServerTable(view))
@@ -39,7 +39,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
-func filterServers(in []store.Server, group string, favoritesOnly bool, search string) []store.Server {
+func filterServers(in []store.Server, aliases map[string]string, group string, favoritesOnly bool, search string) []store.Server {
 	if group == "" && !favoritesOnly && search == "" {
 		return in
 	}
@@ -52,7 +52,7 @@ func filterServers(in []store.Server, group string, favoritesOnly bool, search s
 		if favoritesOnly && !s.IsFavorite {
 			continue
 		}
-		if q != "" && !matchesSearch(s, q) {
+		if q != "" && !matchesSearch(s, aliases, q) {
 			continue
 		}
 		out = append(out, s)
@@ -60,7 +60,7 @@ func filterServers(in []store.Server, group string, favoritesOnly bool, search s
 	return out
 }
 
-func matchesSearch(s store.Server, q string) bool {
+func matchesSearch(s store.Server, aliases map[string]string, q string) bool {
 	if strings.Contains(strings.ToLower(s.Name), q) {
 		return true
 	}
@@ -72,8 +72,8 @@ func matchesSearch(s store.Server, q string) bool {
 			return true
 		}
 	}
-	for _, a := range s.Aliases {
-		if strings.Contains(strings.ToLower(a), q) {
+	for alias, target := range aliases {
+		if target == s.Name && strings.Contains(strings.ToLower(alias), q) {
 			return true
 		}
 	}

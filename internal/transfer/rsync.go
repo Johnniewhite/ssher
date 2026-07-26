@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/johnniewhite/ssher/internal/store"
 )
@@ -44,10 +44,7 @@ func Rsync(s *store.Server, local, remote string, opts RsyncOptions) error {
 		" -o ConnectTimeout=" + strconv.Itoa(maxInt(s.ConnectionTimeout, 30))
 
 	if s.KeyPath != "" {
-		sshOpts += " -i " + s.KeyPath
-	} else {
-		home, _ := os.UserHomeDir()
-		sshOpts += " -i " + filepath.Join(home, ".ssh", "id_rsa")
+		sshOpts += " -i " + shellQuote(s.KeyPath)
 	}
 
 	args := []string{"-az", "--info=progress2", "-e", sshOpts}
@@ -75,6 +72,10 @@ func Rsync(s *store.Server, local, remote string, opts RsyncOptions) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func shellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", `'\''`) + "'"
 }
 
 func maxInt(a, b int) int {

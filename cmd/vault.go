@@ -102,18 +102,14 @@ var vaultChangePasswordCmd = &cobra.Command{
 			return err
 		}
 
-		// Re-marshal and re-encrypt with fresh salt+key.
-		fresh, err := store.InitialiseEmpty([]byte(newPw))
+		// Re-encrypt the complete document in one atomic replacement. Never
+		// write an intermediate empty vault.
+		fresh, err := saved.Rekey([]byte(newPw))
 		if err != nil {
 			return err
 		}
-		// Carry servers/profiles/aliases/history forward.
-		fresh.Vault.Servers = saved.Vault.Servers
-		fresh.Vault.Profiles = saved.Vault.Profiles
-		fresh.Vault.Aliases = saved.Vault.Aliases
-		fresh.Vault.History = saved.Vault.History
-		if err := fresh.SaveAndRefreshSession(); err != nil {
-			return err
+		if err := vault.SaveSession(fresh.Key, fresh.Salt); err != nil {
+			fmt.Println(ui.Warnf(fmt.Sprintf("password changed, but session refresh failed: %v", err)))
 		}
 		fmt.Println(ui.Successf("master password changed"))
 		return nil

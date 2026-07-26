@@ -58,9 +58,8 @@ func OpenBlobWithKey(key []byte) ([]byte, Header, error) {
 	return pt, h, derr
 }
 
-
-// SaveFile atomically writes a fresh vault using the supplied derived key and
-// header salt. Pass DefaultParams unless you have a reason not to.
+// SaveFile atomically writes a fresh vault using the supplied derived key,
+// header salt, and the exact parameters that produced the key.
 func SaveFile(plaintext, key []byte, salt [saltLen]byte, params Argon2idParams) error {
 	if _, err := paths.EnsureConfigDir(); err != nil {
 		return err

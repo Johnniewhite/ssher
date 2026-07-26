@@ -17,7 +17,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 
 	"github.com/creack/pty"
@@ -38,6 +37,10 @@ var DefaultPromptPatterns = []string{
 //
 // Returns the child's exit code.
 func Run(argv []string, password string, promptPatterns []string) (int, error) {
+	return runWithIO(argv, password, promptPatterns, os.Stdin, os.Stdout)
+}
+
+func runWithIO(argv []string, password string, promptPatterns []string, stdin io.Reader, stdout io.Writer) (int, error) {
 	if len(argv) == 0 {
 		return -1, errors.New("wrap: no command supplied")
 	}
@@ -55,42 +58,61 @@ func Run(argv []string, password string, promptPatterns []string) (int, error) {
 	defer ptmx.Close()
 
 	// Mirror local TTY size into the PTY, and re-mirror on SIGWINCH.
-	resizeCh := make(chan os.Signal, 1)
-	signal.Notify(resizeCh, syscall.SIGWINCH)
-	go func() {
-		for range resizeCh {
-			_ = pty.InheritSize(os.Stdin, ptmx)
-		}
-	}()
-	resizeCh <- syscall.SIGWINCH
-	defer signal.Stop(resizeCh)
+	if stdinFile, ok := stdin.(*os.File); ok {
+		resizeCh := make(chan os.Signal, 1)
+		resizeDone := make(chan struct{})
+		signal.Notify(resizeCh, syscall.SIGWINCH)
+		go func() {
+			for {
+				select {
+				case <-resizeCh:
+					_ = pty.InheritSize(stdinFile, ptmx)
+				case <-resizeDone:
+					return
+				}
+			}
+		}()
+		resizeCh <- syscall.SIGWINCH
+		defer func() {
+			signal.Stop(resizeCh)
+			close(resizeDone)
+		}()
 
-	// Local raw mode so user keystrokes pass through cleanly post-injection.
-	fd := int(os.Stdin.Fd())
-	if term.IsTerminal(fd) {
-		state, err := term.MakeRaw(fd)
-		if err != nil {
-			return -1, fmt.Errorf("raw mode: %w", err)
+		// Local raw mode so user keystrokes pass through cleanly.
+		fd := int(stdinFile.Fd())
+		if term.IsTerminal(fd) {
+			state, err := term.MakeRaw(fd)
+			if err != nil {
+				return -1, fmt.Errorf("raw mode: %w", err)
+			}
+			defer term.Restore(fd, state)
 		}
-		defer term.Restore(fd, state)
 	}
 
-	if err := watchAndInject(ptmx, password, promptPatterns); err != nil {
+	// Forward stdin immediately. Key-authenticated commands may never display
+	// a password prompt; waiting for one before forwarding input deadlocks an
+	// otherwise successful interactive session.
+	go func() { _, _ = io.Copy(ptmx, stdin) }()
+
+	if err := watchAndInject(ptmx, password, promptPatterns, stdout); err != nil {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
 		return -1, err
 	}
 
-	// After injection, hand the PTY off to the user. Two goroutines: stdin
-	// -> PTY and PTY -> stdout. The PTY -> stdout side terminates when the
-	// child closes its side; we wait for that to know the session ended.
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() { defer wg.Done(); _, _ = io.Copy(ptmx, os.Stdin) }()
-	go func() { defer wg.Done(); _, _ = io.Copy(os.Stdout, ptmx) }()
+	// The scanner hands PTY output off after injection (or after its bounded
+	// scan). Only this direction is awaited: a terminal read from os.Stdin
+	// cannot be portably cancelled and must not delay returning the child code.
+	outputDone := make(chan struct{})
+	go func() {
+		defer close(outputDone)
+		_, _ = io.Copy(stdout, ptmx)
+	}()
 
 	werr := cmd.Wait()
-	// Closing the PTY unblocks the io.Copy goroutines.
+	// Closing the PTY unblocks the output copier.
 	_ = ptmx.Close()
-	wg.Wait()
+	<-outputDone
 
 	if werr == nil {
 		return 0, nil
@@ -109,7 +131,7 @@ func Run(argv []string, password string, promptPatterns []string) (int, error) {
 // it detects a prompt pattern; at that point it writes the password (with a
 // trailing newline) to the PTY and returns. If the child exits before a
 // prompt appears, returns nil (let the caller handle the exit code).
-func watchAndInject(ptmx io.ReadWriter, password string, patterns []string) error {
+func watchAndInject(ptmx io.ReadWriter, password string, patterns []string, stdout io.Writer) error {
 	buf := make([]byte, 4096)
 	var seen bytes.Buffer
 	const maxScan = 64 * 1024 // never scan more than this for a prompt
@@ -118,7 +140,7 @@ func watchAndInject(ptmx io.ReadWriter, password string, patterns []string) erro
 		n, err := ptmx.Read(buf)
 		if n > 0 {
 			chunk := buf[:n]
-			_, _ = os.Stdout.Write(chunk)
+			_, _ = stdout.Write(chunk)
 			seen.Write(chunk)
 			if seen.Len() > maxScan {
 				// Prompt clearly didn't appear; stop scanning, treat as

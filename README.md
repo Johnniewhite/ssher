@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://pkg.go.dev/github.com/johnniewhite/ssher"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/johnniewhite/ssher.svg"></a>
+  <a href="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://goreportcard.com/report/github.com/johnniewhite/ssher"><img alt="Go Report" src="https://goreportcard.com/badge/github.com/johnniewhite/ssher"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux-lightgrey">
@@ -90,7 +91,7 @@ ssher prod --record            # capture asciicast v2 recording
 ### Run things across servers
 
 ```bash
-ssher exec "uptime" --all
+ssher exec "uptime" --all --timeout 2m
 ssher exec "df -h" --group production
 ssher exec "whoami" --servers web1,web2,db1
 ```
@@ -124,7 +125,7 @@ Run `ssher --help` to see every subcommand.
 
 ## How it works
 
-`ssher` talks SSH directly via [`golang.org/x/crypto/ssh`](https://pkg.go.dev/golang.org/x/crypto/ssh) — there is no embedded or spawned `ssh` process for the connect, exec, and SFTP paths. That choice gives you native auth (password, key file, `ssh-agent`), real goroutine concurrency, jump-host chains via `ssh.Dial` over an existing connection, and native local/remote port forwarding.
+`ssher` talks SSH directly via [`golang.org/x/crypto/ssh`](https://pkg.go.dev/golang.org/x/crypto/ssh) — there is no embedded or spawned `ssh` process for the connect, exec, and SFTP paths. That choice gives you native auth (password, encrypted or unencrypted key file, `ssh-agent`), real goroutine concurrency, one saved jump host, keepalives, and native local/remote port forwarding.
 
 The one exception is `ssher wrap`, which by definition wraps an arbitrary user-supplied command and must use a PTY + prompt-scanner. That logic is fully isolated to `internal/pty/` and used nowhere else in the codebase.
 
@@ -134,7 +135,7 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 | --- | --- | --- |
 | `~/.ssh/config` directives (`ProxyCommand`, `ControlMaster`, `Match`, etc.) aren't honoured | Native dial, no `ssh(1)` involvement | `ssher export-config` writes an `~/.ssh/config` snippet for tools that *do* read it |
 | `rsync` requires SSH key auth | We shell out to `rsync(1)` and don't currently inject passwords into its child SSH | Use `ssher upload` / `ssher download` (SFTP) for password-auth servers |
-| Encrypted private keys aren't unlocked | No passphrase prompt yet | Use an unencrypted key, or load it into `ssh-agent` first |
+| X11 and arbitrary OpenSSH options are export-only | Native connections do not implement OpenSSH's X11/config machinery | Run `ssher export-config` and connect with OpenSSH when those options are required |
 
 ## Security model
 
@@ -151,9 +152,11 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 ```
 
 - The plaintext payload is gzipped JSON containing servers, profiles, aliases, and history together.
-- Argon2id parameters are stored in the header, so costs can ratchet upward without breaking existing vaults.
-- The master password is **never** written to disk. The session file caches an Argon2id-derived key, wrapped with a host-bound HKDF key — exfiltrating `~/.ssher/.session` alone doesn't get you the vault.
+- Argon2id parameters are stored in the header. Weak parameters are ratcheted during a password unlock, when a matching replacement key can be derived safely.
+- New master passwords must be at least 12 characters; existing vault passwords remain compatible.
+- The master password is **never** written to disk. The session file caches an Argon2id-derived key, wrapped with a host-bound HKDF key. This machine binding is defense in depth; protect access to the local user account.
 - Plaintext exports (`export-csv`, default `export-json`) **omit passwords**. `--include-passwords` is the explicit opt-in.
+- SSH host keys use trust on first use through `~/.ssh/known_hosts`; changed keys are rejected.
 
 | Path | Mode | Contents |
 | --- | --- | --- |
@@ -165,8 +168,14 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 ## Roadmap
 
 - **Workspaces** — share an encrypted server list across a small team, in design now.
-- **Encrypted-key passphrase prompts** for the connect path.
 - **Password injection for `rsync`** via the same PTY layer that powers `wrap`.
+- **Native X11 forwarding** with local display authentication and channel proxying.
+
+## Contributing and security
+
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [architecture guide](docs/ARCHITECTURE.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+Do not report vulnerabilities or submit real credentials through public issues. Follow the private process in [SECURITY.md](SECURITY.md). Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

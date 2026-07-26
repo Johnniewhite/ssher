@@ -55,9 +55,9 @@ func NewWriter(title string, width, height int) (*Writer, string, error) {
 	if err := os.MkdirAll(dir, paths.DirMode); err != nil {
 		return nil, "", err
 	}
-	stamp := time.Now().UTC().Format("20060102-150405")
+	stamp := time.Now().UTC().Format("20060102-150405.000000000")
 	path := filepath.Join(dir, fmt.Sprintf("%s-%s.cast", sanitize(title), stamp))
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, paths.FileMode)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, paths.FileMode)
 	if err != nil {
 		return nil, "", err
 	}

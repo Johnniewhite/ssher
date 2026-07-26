@@ -55,12 +55,6 @@ func Interactive(c *Client, opts InteractiveOptions) error {
 		return fmt.Errorf("request pty: %w", err)
 	}
 
-	if c.Server.X11Forward {
-		if err := requestX11(sess); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: X11 forwarding refused: %v\n", err)
-		}
-	}
-
 	cancelForwards, err := setupForwards(c)
 	if err != nil {
 		return err
@@ -93,14 +87,32 @@ func Interactive(c *Client, opts InteractiveOptions) error {
 
 // Run executes a non-interactive command on the remote host and returns its
 // combined output and exit code. Used by `ssher exec`.
-func Run(c *Client, cmd string) (output string, exitCode int, err error) {
+func Run(ctx context.Context, c *Client, cmd string) (output string, exitCode int, err error) {
 	sess, serr := c.SSH.NewSession()
 	if serr != nil {
 		return "", -1, fmt.Errorf("new session: %w", serr)
 	}
 	defer sess.Close()
 
-	out, runErr := sess.CombinedOutput(cmd)
+	type result struct {
+		out []byte
+		err error
+	}
+	done := make(chan result, 1)
+	go func() {
+		out, err := sess.CombinedOutput(cmd)
+		done <- result{out: out, err: err}
+	}()
+
+	var out []byte
+	var runErr error
+	select {
+	case res := <-done:
+		out, runErr = res.out, res.err
+	case <-ctx.Done():
+		_ = sess.Close()
+		return "", -1, ctx.Err()
+	}
 	exit := 0
 	if runErr != nil {
 		var ee *ssh.ExitError
@@ -128,31 +140,6 @@ func isExitError(err error, into **ssh.ExitError) bool {
 	return false
 }
 
-func requestX11(sess *ssh.Session) error {
-	// Minimal X11 forwarding request. We don't currently spin up a local X11
-	// channel handler, so this is "request and hope" — matches the Python
-	// behaviour, which also just sets -X on the ssh command line.
-	payload := struct {
-		SingleConnection bool
-		AuthProtocol     string
-		AuthCookie       string
-		ScreenNumber     uint32
-	}{
-		SingleConnection: false,
-		AuthProtocol:     "MIT-MAGIC-COOKIE-1",
-		AuthCookie:       "00000000000000000000000000000000",
-		ScreenNumber:     0,
-	}
-	ok, err := sess.SendRequest("x11-req", true, ssh.Marshal(&payload))
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return fmt.Errorf("server refused")
-	}
-	return nil
-}
-
 // setupForwards installs local and remote port forwards as configured on the
 // server. Returns a cleanup func that closes the listeners.
 func setupForwards(c *Client) (func(), error) {
@@ -173,11 +160,7 @@ func setupForwards(c *Client) (func(), error) {
 	}
 
 	for _, fwd := range c.Server.RemoteForwards {
-		host := fwd.RemoteHost
-		if host == "" {
-			host = "127.0.0.1"
-		}
-		l, err := c.SSH.Listen("tcp", host+":"+strconv.Itoa(fwd.LocalPort))
+		l, err := c.SSH.Listen("tcp", remoteListenAddress(fwd))
 		if err != nil {
 			cancel()
 			closeAll(listeners)
@@ -236,7 +219,7 @@ func acceptRemote(ctx context.Context, wg *sync.WaitGroup, l net.Listener, fwd s
 		}
 		go func() {
 			defer remote.Close()
-			local, err := net.Dial("tcp", "127.0.0.1:"+strconv.Itoa(fwd.RemotePort))
+			local, err := net.Dial("tcp", remoteTargetAddress(fwd))
 			if err != nil {
 				return
 			}
@@ -244,6 +227,18 @@ func acceptRemote(ctx context.Context, wg *sync.WaitGroup, l net.Listener, fwd s
 			pipeBoth(local, remote)
 		}()
 	}
+}
+
+func remoteListenAddress(fwd store.PortForward) string {
+	return net.JoinHostPort("127.0.0.1", strconv.Itoa(fwd.LocalPort))
+}
+
+func remoteTargetAddress(fwd store.PortForward) string {
+	host := fwd.RemoteHost
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	return net.JoinHostPort(host, strconv.Itoa(fwd.RemotePort))
 }
 
 func pipeBoth(a, b net.Conn) {

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -51,7 +52,15 @@ var aliasAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		alias := args[1]
+		alias := strings.TrimSpace(args[1])
+		if alias == "" {
+			return fmt.Errorf("alias is required")
+		}
+		for _, server := range saved.Vault.Servers {
+			if server.Name == alias {
+				return fmt.Errorf("alias %q conflicts with a server name", alias)
+			}
+		}
 		if existing, ok := saved.Vault.Aliases[alias]; ok {
 			return fmt.Errorf("alias %q already maps to %s", alias, existing)
 		}

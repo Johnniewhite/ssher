@@ -75,32 +75,66 @@ func runInteractive(c *cobra.Command, args []string) error {
 				return err
 			}
 		case "e", "edit":
-			handleEditFlow(saved)
-			saved, _ = ui.LoadVault()
+			if err := handleEditFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
+			saved, err = ui.LoadVault()
+			if err != nil {
+				return err
+			}
 		case "d", "del", "delete":
-			handleDeleteFlow(saved)
-			saved, _ = ui.LoadVault()
+			if err := handleDeleteFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
+			saved, err = ui.LoadVault()
+			if err != nil {
+				return err
+			}
 		case "f", "fav":
-			handleFavoriteFlow(saved)
-			saved, _ = ui.LoadVault()
+			if err := handleFavoriteFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
+			saved, err = ui.LoadVault()
+			if err != nil {
+				return err
+			}
 		case "g", "groups":
-			_ = groupsCmd.RunE(c, nil)
+			if err := groupsCmd.RunE(c, nil); err != nil {
+				printErr(err)
+			}
 			pause()
 		case "s", "search":
-			handleSearchFlow(saved)
+			if err := handleSearchFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
 		case "x", "exec":
-			handleExecFlow(saved)
-			saved, _ = ui.LoadVault()
+			if err := handleExecFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
 		case "p", "ping":
-			_ = pingCmd.RunE(c, nil)
+			if err := pingCmd.RunE(c, nil); err != nil {
+				printErr(err)
+			}
 			pause()
 		case "c", "copy":
-			handleCopyFlow(saved)
+			if err := handleCopyFlow(saved); err != nil {
+				printErr(err)
+				pause()
+			}
 		case "v", "vault":
-			_ = vaultStatusCmd.RunE(c, nil)
+			if err := vaultStatusCmd.RunE(c, nil); err != nil {
+				printErr(err)
+			}
 			pause()
 		case "h", "history":
-			_ = historyCmd.RunE(c, nil)
+			if err := historyCmd.RunE(c, nil); err != nil {
+				printErr(err)
+			}
 			pause()
 		case "?", "help":
 			printHelpReference()
@@ -133,73 +167,98 @@ func runAddInteractive(saved *store.Saved) error {
 	return nil
 }
 
-func handleEditFlow(saved *store.Saved) {
+func handleEditFlow(saved *store.Saved) error {
 	target, err := pickServer(saved, "Edit which server?")
 	if err != nil || target == nil {
-		return
+		return err
 	}
 	updated, err := promptEditServer(*target)
 	if err != nil {
-		printErr(err)
-		return
+		return err
 	}
-	_ = saved.Vault.UpdateServer(target.Name, func(s *store.Server) { *s = updated })
-	_ = saved.SaveAndRefreshSession()
+	if err := normalizeJumpHost(saved.Vault, target.Name, &updated); err != nil {
+		return err
+	}
+	if err := saved.Vault.UpdateServer(target.Name, func(s *store.Server) { *s = updated }); err != nil {
+		return err
+	}
+	if err := saved.SaveAndRefreshSession(); err != nil {
+		return err
+	}
 	fmt.Println(ui.Successf("updated"))
 	pause()
+	return nil
 }
 
-func handleDeleteFlow(saved *store.Saved) {
+func handleDeleteFlow(saved *store.Saved) error {
 	target, err := pickServer(saved, "Delete which server?")
 	if err != nil || target == nil {
-		return
+		return err
 	}
 	var ok bool
-	_ = huh.NewConfirm().
+	if err := huh.NewConfirm().
 		Title(fmt.Sprintf("Delete %s?", target.Name)).
 		Affirmative("Delete").
 		Negative("Cancel").
 		Value(&ok).
-		Run()
-	if !ok {
-		return
+		Run(); err != nil {
+		return err
 	}
-	_ = saved.Vault.DeleteServer(target.Name)
-	_ = saved.SaveAndRefreshSession()
+	if !ok {
+		return nil
+	}
+	if err := saved.Vault.DeleteServer(target.Name); err != nil {
+		return err
+	}
+	if err := saved.SaveAndRefreshSession(); err != nil {
+		return err
+	}
 	fmt.Println(ui.Successf("deleted"))
 	pause()
+	return nil
 }
 
-func handleFavoriteFlow(saved *store.Saved) {
+func handleFavoriteFlow(saved *store.Saved) error {
 	target, err := pickServer(saved, "Toggle favorite on which server?")
 	if err != nil || target == nil {
-		return
+		return err
 	}
-	_ = saved.Vault.UpdateServer(target.Name, func(s *store.Server) { s.IsFavorite = !s.IsFavorite })
-	_ = saved.SaveAndRefreshSession()
+	if err := saved.Vault.UpdateServer(target.Name, func(s *store.Server) { s.IsFavorite = !s.IsFavorite }); err != nil {
+		return err
+	}
+	if err := saved.SaveAndRefreshSession(); err != nil {
+		return err
+	}
 	pause()
+	return nil
 }
 
-func handleSearchFlow(saved *store.Saved) {
+func handleSearchFlow(saved *store.Saved) error {
 	var query string
-	_ = huh.NewInput().Title("Search").Value(&query).Run()
-	if query == "" {
-		return
+	if err := huh.NewInput().Title("Search").Value(&query).Run(); err != nil {
+		return err
 	}
-	view := filterServers(saved.Vault.SortedServers(), "", false, query)
+	if query == "" {
+		return nil
+	}
+	view := filterServers(saved.Vault.SortedServers(), saved.Vault.Aliases, "", false, query)
 	fmt.Println(ui.RenderServerTable(view))
 	pause()
+	return nil
 }
 
-func handleExecFlow(saved *store.Saved) {
+func handleExecFlow(saved *store.Saved) error {
 	var cmdline string
-	_ = huh.NewInput().Title("Command to run").Value(&cmdline).Run()
-	if cmdline == "" {
-		return
+	if err := huh.NewInput().Title("Command to run").Value(&cmdline).Run(); err != nil {
+		return err
 	}
-	results := runOnAll(saved.Vault, saved.Vault.SortedServers(), cmdline, defaultExecParallel)
-	printExecResults(results)
+	if cmdline == "" {
+		return nil
+	}
+	results := runOnAll(saved.Vault, saved.Vault.SortedServers(), cmdline, defaultExecParallel, defaultExecTimeout)
+	_ = printExecResults(results)
 	pause()
+	return nil
 }
 
 func handleTransferFlow(saved *store.Saved) {
@@ -258,23 +317,28 @@ func handleTransferFlow(saved *store.Saved) {
 	pause()
 }
 
-func handleCopyFlow(saved *store.Saved) {
+func handleCopyFlow(saved *store.Saved) error {
 	target, err := pickServer(saved, "Copy details from which server?")
 	if err != nil || target == nil {
-		return
+		return err
 	}
 	field := "command"
-	_ = huh.NewSelect[string]().
+	if err := huh.NewSelect[string]().
 		Title("Field").
 		Options(
 			huh.NewOption("ssh command", "command"),
 			huh.NewOption("host", "host"),
 			huh.NewOption("user", "user"),
 			huh.NewOption("password", "password"),
-		).Value(&field).Run()
+		).Value(&field).Run(); err != nil {
+		return err
+	}
 	copyField = field
-	_ = copyCmd.RunE(nil, []string{target.Name})
+	if err := copyCmd.RunE(nil, []string{target.Name}); err != nil {
+		return err
+	}
 	pause()
+	return nil
 }
 
 func pickServer(saved *store.Saved, title string) (*store.Server, error) {

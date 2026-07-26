@@ -25,6 +25,7 @@ const (
 	sessVersion = 1
 	// header (4+1+8+saltLen) + nonce + cipherbody (key+tag).
 	sessHeaderLen = 4 + 1 + 8 + saltLen
+	sessBlobLen   = sessHeaderLen + nonceLen + keyLen + 16
 )
 
 var ErrNoSession = errors.New("vault: no active session")
@@ -96,7 +97,7 @@ func LoadSession() (key []byte, salt [saltLen]byte, err error) {
 	if rerr != nil {
 		return nil, salt, fmt.Errorf("read session: %w", rerr)
 	}
-	if len(blob) < sessHeaderLen+nonceLen {
+	if len(blob) != sessBlobLen {
 		return nil, salt, ErrNoSession
 	}
 	if string(blob[:4]) != sessMagic {
@@ -165,7 +166,7 @@ func SessionInfo() (active bool, remaining time.Duration, err error) {
 	if rerr != nil {
 		return false, 0, fmt.Errorf("read session: %w", rerr)
 	}
-	if len(blob) < 13 || string(blob[:4]) != sessMagic {
+	if len(blob) != sessBlobLen || string(blob[:4]) != sessMagic || blob[4] != sessVersion {
 		return false, 0, nil
 	}
 	expires := int64(binary.BigEndian.Uint64(blob[5:13]))

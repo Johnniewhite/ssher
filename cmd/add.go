@@ -111,7 +111,6 @@ func promptNewServer(v *store.Vault) (store.Server, error) {
 			huh.NewInput().Title("Remote forwards").
 				Description("Same syntax — blank for none").
 				Value(&forwardsRemoteStr),
-			huh.NewConfirm().Title("X11 forwarding?").Value(&s.X11Forward),
 			huh.NewConfirm().Title("Mark as favorite?").Value(&s.IsFavorite),
 		),
 	)
@@ -121,6 +120,16 @@ func promptNewServer(v *store.Vault) (store.Server, error) {
 
 	if s.Group == "" {
 		s.Group = "default"
+	}
+	if s.JumpHost != "" {
+		jump, _, err := v.ResolveTarget(s.JumpHost)
+		if err != nil {
+			return s, fmt.Errorf("jump host: %w", err)
+		}
+		if jump.Name == s.Name {
+			return s, errors.New("a server cannot use itself as a jump host")
+		}
+		s.JumpHost = jump.Name
 	}
 	if t := splitCSV(tagsStr); len(t) > 0 {
 		s.Tags = t
@@ -202,21 +211,24 @@ func parseForwards(s string) ([]store.PortForward, error) {
 		var pf store.PortForward
 		switch len(segs) {
 		case 2:
-			lp, err := strconv.Atoi(segs[0])
+			lp, err := parseForwardPort(segs[0])
 			if err != nil {
 				return nil, fmt.Errorf("bad local port in %q", raw)
 			}
-			rp, err := strconv.Atoi(segs[1])
+			rp, err := parseForwardPort(segs[1])
 			if err != nil {
 				return nil, fmt.Errorf("bad remote port in %q", raw)
 			}
 			pf = store.PortForward{LocalPort: lp, RemoteHost: "127.0.0.1", RemotePort: rp}
 		case 3:
-			lp, err := strconv.Atoi(segs[0])
+			lp, err := parseForwardPort(segs[0])
 			if err != nil {
 				return nil, fmt.Errorf("bad local port in %q", raw)
 			}
-			rp, err := strconv.Atoi(segs[2])
+			if strings.TrimSpace(segs[1]) == "" {
+				return nil, fmt.Errorf("empty remote host in %q", raw)
+			}
+			rp, err := parseForwardPort(segs[2])
 			if err != nil {
 				return nil, fmt.Errorf("bad remote port in %q", raw)
 			}
@@ -227,4 +239,12 @@ func parseForwards(s string) ([]store.PortForward, error) {
 		out = append(out, pf)
 	}
 	return out, nil
+}
+
+func parseForwardPort(s string) (int, error) {
+	port, err := strconv.Atoi(s)
+	if err != nil || port < 1 || port > 65535 {
+		return 0, errors.New("port must be 1..65535")
+	}
+	return port, nil
 }

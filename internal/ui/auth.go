@@ -12,11 +12,13 @@ import (
 	"github.com/johnniewhite/ssher/internal/vault"
 )
 
+const minMasterPasswordLength = 12
+
 // LoadVault is the canonical entry point for every command that touches the
 // encrypted store. It tries (in order):
-//   1. an active session (no prompt)
-//   2. interactive password prompt
-//   3. first-time setup if no vault exists yet
+//  1. an active session (no prompt)
+//  2. interactive password prompt
+//  3. first-time setup if no vault exists yet
 //
 // On success, callers receive a *store.Saved they can mutate and re-save.
 // The session is refreshed on every successful unlock.
@@ -53,8 +55,8 @@ func firstTimeSetup() (*store.Saved, error) {
 				EchoMode(huh.EchoModePassword).
 				Value(&pw).
 				Validate(func(s string) error {
-					if len(s) < 4 {
-						return fmt.Errorf("password must be at least 4 characters")
+					if len(s) < minMasterPasswordLength {
+						return fmt.Errorf("password must be at least %d characters", minMasterPasswordLength)
 					}
 					return nil
 				}),
@@ -134,8 +136,8 @@ func PromptNewPassword(title string) (string, error) {
 				EchoMode(huh.EchoModePassword).
 				Value(&pw).
 				Validate(func(s string) error {
-					if len(s) < 4 {
-						return fmt.Errorf("password must be at least 4 characters")
+					if len(s) < minMasterPasswordLength {
+						return fmt.Errorf("password must be at least %d characters", minMasterPasswordLength)
 					}
 					return nil
 				}),
