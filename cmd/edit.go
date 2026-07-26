@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -28,6 +29,9 @@ var editCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		if err := normalizeJumpHost(saved.Vault, target.Name, &updated); err != nil {
+			return err
+		}
 		if err := saved.Vault.UpdateServer(target.Name, func(s *store.Server) {
 			*s = updated
 		}); err != nil {
@@ -41,6 +45,21 @@ var editCmd = &cobra.Command{
 	},
 }
 
+func normalizeJumpHost(v *store.Vault, serverName string, server *store.Server) error {
+	if server.JumpHost == "" {
+		return nil
+	}
+	jump, _, err := v.ResolveTarget(server.JumpHost)
+	if err != nil {
+		return fmt.Errorf("jump host: %w", err)
+	}
+	if jump.Name == serverName {
+		return fmt.Errorf("a server cannot use itself as a jump host")
+	}
+	server.JumpHost = jump.Name
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(editCmd)
 }
@@ -48,6 +67,8 @@ func init() {
 func promptEditServer(s store.Server) (store.Server, error) {
 	portStr := strconv.Itoa(s.Port)
 	tagsStr := joinCSV(s.Tags)
+	localForwards := formatForwards(s.LocalForwards)
+	remoteForwards := formatForwards(s.RemoteForwards)
 	authChoice := string(s.AuthType)
 
 	form := huh.NewForm(
@@ -66,7 +87,12 @@ func promptEditServer(s store.Server) (store.Server, error) {
 			huh.NewInput().Title("Tags (comma-separated)").Value(&tagsStr),
 			huh.NewInput().Title("Notes").Value(&s.Notes),
 			huh.NewInput().Title("Jump host").Value(&s.JumpHost),
-			huh.NewConfirm().Title("X11 forwarding?").Value(&s.X11Forward),
+			huh.NewInput().Title("Local forwards").
+				Description("local:host:remote, comma-separated").
+				Value(&localForwards),
+			huh.NewInput().Title("Remote forwards").
+				Description("remote:local-host:local-port, comma-separated").
+				Value(&remoteForwards),
 			huh.NewConfirm().Title("Favorite?").Value(&s.IsFavorite),
 		),
 	)
@@ -77,8 +103,16 @@ func promptEditServer(s store.Server) (store.Server, error) {
 	s.Port = port
 	s.AuthType = store.AuthType(authChoice)
 	s.Tags = splitCSV(tagsStr)
+	var err error
+	if s.LocalForwards, err = parseForwards(localForwards); err != nil {
+		return s, fmt.Errorf("local forwards: %w", err)
+	}
+	if s.RemoteForwards, err = parseForwards(remoteForwards); err != nil {
+		return s, fmt.Errorf("remote forwards: %w", err)
+	}
 
-	if s.AuthType == store.AuthPassword && s.Password == "" {
+	switch s.AuthType {
+	case store.AuthPassword:
 		pwForm := huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().Title("Password").
@@ -89,17 +123,31 @@ func promptEditServer(s store.Server) (store.Server, error) {
 		if err := pwForm.Run(); err != nil {
 			return s, err
 		}
+		s.KeyPath = ""
+	case store.AuthKey:
+		keyForm := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().Title("Key path").
+					Description("Leave blank to try ssh-agent and standard key files").
+					Value(&s.KeyPath),
+			),
+		)
+		if err := keyForm.Run(); err != nil {
+			return s, err
+		}
+		s.Password = ""
 	}
 	return s, nil
 }
 
 func joinCSV(xs []string) string {
-	out := ""
-	for i, x := range xs {
-		if i > 0 {
-			out += ","
-		}
-		out += x
+	return strings.Join(xs, ",")
+}
+
+func formatForwards(forwards []store.PortForward) string {
+	parts := make([]string, 0, len(forwards))
+	for _, fwd := range forwards {
+		parts = append(parts, fmt.Sprintf("%d:%s:%d", fwd.LocalPort, fwd.RemoteHost, fwd.RemotePort))
 	}
-	return out
+	return strings.Join(parts, ",")
 }

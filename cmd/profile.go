@@ -27,7 +27,7 @@ var profileListCmd = &cobra.Command{
 			return nil
 		}
 		for _, p := range saved.Vault.Profiles {
-			fmt.Printf("%s  timeout=%d keepalive=%d x11=%v reconnect=%v\n",
+			fmt.Printf("%s  timeout=%d keepalive=%d x11(export-only)=%v reconnect=%v\n",
 				ui.Title.Render(p.Name),
 				p.ConnectionTimeout, p.KeepAlive, p.X11Forward, p.AutoReconnect)
 		}
@@ -36,11 +36,11 @@ var profileListCmd = &cobra.Command{
 }
 
 var (
-	profileAddTimeout    int
-	profileAddKeepAlive  int
-	profileAddX11        bool
-	profileAddReconnect  bool
-	profileAddRetries    int
+	profileAddTimeout   int
+	profileAddKeepAlive int
+	profileAddX11       bool
+	profileAddReconnect bool
+	profileAddRetries   int
 )
 
 var profileAddCmd = &cobra.Command{
@@ -170,6 +170,7 @@ func init() {
 	profileAddCmd.Flags().IntVar(&profileAddTimeout, "timeout", 30, "connection timeout in seconds")
 	profileAddCmd.Flags().IntVar(&profileAddKeepAlive, "keepalive", 60, "keepalive in seconds (0 to disable)")
 	profileAddCmd.Flags().BoolVar(&profileAddX11, "x11", false, "enable X11 forwarding")
+	_ = profileAddCmd.Flags().MarkDeprecated("x11", "native X11 forwarding is unsupported; this setting is export-config-only")
 	profileAddCmd.Flags().BoolVar(&profileAddReconnect, "reconnect", false, "auto-reconnect by default")
 	profileAddCmd.Flags().IntVar(&profileAddRetries, "max-retries", 3, "max reconnect attempts")
 

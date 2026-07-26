@@ -17,6 +17,11 @@ type Saved struct {
 	Vault *Vault
 	Key   []byte
 	Salt  [16]byte
+	// Params are the Argon2id parameters that produced Key. They must travel
+	// with the cached key: writing different parameters into the header
+	// without deriving a new key would make the vault impossible to unlock
+	// with its master password.
+	Params vault.Argon2idParams
 }
 
 // LoadWithPassword decrypts the vault using a master password (cold path).
@@ -25,11 +30,26 @@ func LoadWithPassword(password []byte) (*Saved, error) {
 	if err != nil {
 		return nil, err
 	}
+	if h.BelowMinParams() {
+		// A KDF ratchet needs the master password; a cached session key alone
+		// cannot be upgraded. Re-encrypt atomically, then reload so Key, Salt,
+		// and Params all describe the newly written vault.
+		for i := range key {
+			key[i] = 0
+		}
+		if err := vault.SaveFileFromPassword(pt, password); err != nil {
+			return nil, fmt.Errorf("ratchet vault KDF: %w", err)
+		}
+		pt, h, key, err = vault.LoadFile(password)
+		if err != nil {
+			return nil, fmt.Errorf("reload ratcheted vault: %w", err)
+		}
+	}
 	v, err := unmarshal(pt)
 	if err != nil {
 		return nil, err
 	}
-	return &Saved{Vault: v, Key: key, Salt: h.SaltBytes()}, nil
+	return &Saved{Vault: v, Key: key, Salt: h.SaltBytes(), Params: h.Params}, nil
 }
 
 // LoadFromSession decrypts the vault using a cached session key. Returns
@@ -62,7 +82,7 @@ func LoadFromSession() (*Saved, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Saved{Vault: v, Key: key, Salt: salt}, nil
+	return &Saved{Vault: v, Key: key, Salt: salt, Params: h.Params}, nil
 }
 
 // Save writes the vault back atomically using the cached key.
@@ -71,7 +91,11 @@ func (s *Saved) Save() error {
 	if err != nil {
 		return err
 	}
-	return vault.SaveFile(pt, s.Key, s.Salt, vault.DefaultParams)
+	params := s.Params
+	if params.Time == 0 || params.MemKiB == 0 || params.Threads == 0 {
+		return errors.New("store: missing KDF parameters for cached vault key")
+	}
+	return vault.SaveFile(pt, s.Key, s.Salt, params)
 }
 
 // SaveAndRefreshSession persists the vault and bumps the session expiry.
@@ -85,8 +109,25 @@ func (s *Saved) SaveAndRefreshSession() error {
 // InitialiseEmpty writes a brand-new empty vault with the supplied password.
 // Used on first-time setup.
 func InitialiseEmpty(password []byte) (*Saved, error) {
-	v := New()
+	return Initialise(New(), password)
+}
+
+// Initialise writes a complete new vault in one atomic replacement.
+func Initialise(v *Vault, password []byte) (*Saved, error) {
 	pt, err := marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	if err := vault.SaveFileFromPassword(pt, password); err != nil {
+		return nil, err
+	}
+	return LoadWithPassword(password)
+}
+
+// Rekey atomically writes the complete vault with a fresh password-derived
+// key. It never exposes an intermediate empty vault.
+func (s *Saved) Rekey(password []byte) (*Saved, error) {
+	pt, err := marshal(s.Vault)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +155,19 @@ func unmarshal(b []byte) (*Vault, error) {
 	if v.Aliases == nil {
 		v.Aliases = map[string]string{}
 	}
+	// Older vaults stored aliases on each server. Keep the top-level alias map
+	// canonical while migrating the legacy representation during load.
+	for i, s := range v.Servers {
+		for _, alias := range s.Aliases {
+			if strings.TrimSpace(alias) == "" {
+				continue
+			}
+			if _, exists := v.Aliases[alias]; !exists {
+				v.Aliases[alias] = s.Name
+			}
+		}
+		v.Servers[i].Aliases = nil
+	}
 	return v, nil
 }
 
@@ -121,13 +175,41 @@ func unmarshal(b []byte) (*Vault, error) {
 
 func (v *Vault) AddServer(s Server) error {
 	s.Touch()
-	if s.Name == "" {
+	if strings.TrimSpace(s.Name) == "" {
 		return errors.New("server name is required")
+	}
+	if strings.TrimSpace(s.Host) == "" {
+		return errors.New("server host is required")
+	}
+	if strings.TrimSpace(s.User) == "" {
+		return errors.New("server user is required")
+	}
+	if s.Port < 1 || s.Port > 65535 {
+		return fmt.Errorf("server port %d is outside 1..65535", s.Port)
+	}
+	if s.AuthType != AuthKey && s.AuthType != AuthPassword {
+		return fmt.Errorf("unsupported auth type %q", s.AuthType)
 	}
 	if v.findIndex(s.Name) >= 0 {
 		return fmt.Errorf("server %q already exists", s.Name)
 	}
+	if v.Aliases == nil {
+		v.Aliases = map[string]string{}
+	}
+	for _, alias := range s.Aliases {
+		if strings.TrimSpace(alias) == "" {
+			continue
+		}
+		if target, exists := v.Aliases[alias]; exists && target != s.Name {
+			return fmt.Errorf("alias %q already maps to %s", alias, target)
+		}
+	}
 	v.Servers = append(v.Servers, s)
+	for _, alias := range s.Aliases {
+		if strings.TrimSpace(alias) != "" {
+			v.Aliases[alias] = s.Name
+		}
+	}
 	return nil
 }
 
@@ -210,19 +292,24 @@ func (v *Vault) ResolveTarget(target string) (*Server, string, error) {
 		}
 	}
 
-	// Case-insensitive fuzzy: unique substring of name OR alias.
+	// Case-insensitive fuzzy: unique substring of name OR canonical alias.
 	lower := strings.ToLower(target)
 	var matches []int
+	matched := map[int]bool{}
 	for i, s := range v.Servers {
 		if strings.Contains(strings.ToLower(s.Name), lower) {
 			matches = append(matches, i)
+			matched[i] = true
 			continue
 		}
-		for _, a := range s.Aliases {
-			if strings.Contains(strings.ToLower(a), lower) {
-				matches = append(matches, i)
-				break
-			}
+	}
+	for alias, canonical := range v.Aliases {
+		if !strings.Contains(strings.ToLower(alias), lower) {
+			continue
+		}
+		if i := v.findIndex(canonical); i >= 0 && !matched[i] {
+			matches = append(matches, i)
+			matched[i] = true
 		}
 	}
 	switch len(matches) {
@@ -237,6 +324,18 @@ func (v *Vault) ResolveTarget(target string) (*Server, string, error) {
 		}
 		return nil, "", fmt.Errorf("ambiguous match %q: %s", target, strings.Join(names, ", "))
 	}
+}
+
+// AliasesFor returns the canonical aliases for a server in stable order.
+func (v *Vault) AliasesFor(serverName string) []string {
+	var out []string
+	for alias, target := range v.Aliases {
+		if target == serverName {
+			out = append(out, alias)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 // Groups returns the set of group names in stable order.

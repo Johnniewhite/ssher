@@ -56,28 +56,32 @@ var importCSVCmd = &cobra.Command{
 			return fmt.Errorf("csv must have at least name,host,user columns")
 		}
 		added := 0
-		for _, row := range rows[1:] {
+		for rowNum, row := range rows[1:] {
+			if nameI >= len(row) || hostI >= len(row) || userI >= len(row) {
+				fmt.Println(ui.Warnf(fmt.Sprintf("row %d is missing a required column", rowNum+2)))
+				continue
+			}
 			s := store.Server{
 				Name: row[nameI],
 				Host: row[hostI],
 				User: row[userI],
 			}
-			if portI >= 0 {
-				if p, err := strconv.Atoi(row[portI]); err == nil {
+			if value, ok := csvCell(row, portI); ok {
+				if p, err := strconv.Atoi(value); err == nil {
 					s.Port = p
 				}
 			}
-			if authI >= 0 {
-				s.AuthType = store.AuthType(row[authI])
+			if value, ok := csvCell(row, authI); ok {
+				s.AuthType = store.AuthType(value)
 			}
-			if groupI >= 0 {
-				s.Group = row[groupI]
+			if value, ok := csvCell(row, groupI); ok {
+				s.Group = value
 			}
-			if tagsI >= 0 {
-				s.Tags = splitCSV(row[tagsI])
+			if value, ok := csvCell(row, tagsI); ok {
+				s.Tags = splitCSV(value)
 			}
-			if notesI >= 0 {
-				s.Notes = row[notesI]
+			if value, ok := csvCell(row, notesI); ok {
+				s.Notes = value
 			}
 			if err := saved.Vault.AddServer(s); err != nil {
 				fmt.Println(ui.Warnf(err.Error()))
@@ -145,7 +149,7 @@ var exportCSVCmd = &cobra.Command{
 		}
 		w := os.Stdout
 		if exportCSVOut != "" {
-			f, err := os.Create(exportCSVOut)
+			f, err := openPrivateOutput(exportCSVOut)
 			if err != nil {
 				return err
 			}
@@ -153,17 +157,24 @@ var exportCSVCmd = &cobra.Command{
 			w = f
 		}
 		cw := csv.NewWriter(w)
-		defer cw.Flush()
-		_ = cw.Write([]string{"name", "host", "user", "port", "auth_type", "group", "tags", "notes"})
+		if err := cw.Write([]string{"name", "host", "user", "port", "auth_type", "group", "tags", "notes"}); err != nil {
+			return err
+		}
 		for _, s := range saved.Vault.Servers {
-			_ = cw.Write([]string{
+			if err := cw.Write([]string{
 				s.Name, s.Host, s.User,
 				strconv.Itoa(s.Port),
 				string(s.AuthType),
 				s.Group,
 				strings.Join(s.Tags, ","),
 				s.Notes,
-			})
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		if err := cw.Error(); err != nil {
+			return err
 		}
 		if exportCSVOut != "" {
 			fmt.Fprintln(os.Stderr, ui.Successf("exported "+exportCSVOut))
@@ -195,16 +206,42 @@ var exportJSONCmd = &cobra.Command{
 			return err
 		}
 		if exportJSONOut == "" {
-			os.Stdout.Write(b)
-			os.Stdout.Write([]byte("\n"))
-			return nil
+			_, err := os.Stdout.Write(append(b, '\n'))
+			return err
 		}
-		if err := os.WriteFile(exportJSONOut, b, 0o600); err != nil {
+		f, err := openPrivateOutput(exportJSONOut)
+		if err != nil {
+			return err
+		}
+		if _, err := f.Write(b); err != nil {
+			_ = f.Close()
+			return err
+		}
+		if err := f.Close(); err != nil {
 			return err
 		}
 		fmt.Println(ui.Successf("exported " + exportJSONOut))
 		return nil
 	},
+}
+
+func csvCell(row []string, index int) (string, bool) {
+	if index < 0 || index >= len(row) {
+		return "", false
+	}
+	return row[index], true
+}
+
+func openPrivateOutput(path string) (*os.File, error) {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	if err != nil {
+		return nil, err
+	}
+	if err := f.Chmod(0o600); err != nil {
+		_ = f.Close()
+		return nil, err
+	}
+	return f, nil
 }
 
 func init() {

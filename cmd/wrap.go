@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -12,10 +13,10 @@ import (
 )
 
 var (
-	wrapEnv     bool
-	wrapFile    string
-	wrapFD      int
-	wrapPrompt  string
+	wrapEnv      bool
+	wrapFile     string
+	wrapFD       int
+	wrapPrompt   string
 	wrapPwInline string
 )
 
@@ -121,7 +122,7 @@ func readAllAtMost(f *os.File, max int) ([]byte, error) {
 			buf = append(buf, tmp[:n]...)
 		}
 		if err != nil {
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return buf, err

@@ -55,8 +55,8 @@ type Argon2idParams struct {
 // older binaries continue to open after we raise the floor.
 var DefaultParams = Argon2idParams{Time: 3, MemKiB: 64 * 1024, Threads: 4}
 
-// MinParams is the floor applied on unlock; vaults below this are rewritten at
-// DefaultParams during the next save.
+// MinParams is the floor applied during password unlock; vaults below this are
+// immediately re-keyed at DefaultParams while the password is available.
 var MinParams = Argon2idParams{Time: 2, MemKiB: 32 * 1024, Threads: 2}
 
 var (
@@ -65,6 +65,7 @@ var (
 	ErrBadKDF      = errors.New("vault: unsupported KDF")
 	ErrBadPassword = errors.New("vault: incorrect master password")
 	ErrTruncated   = errors.New("vault: file truncated")
+	ErrBadParams   = errors.New("vault: invalid or unsafe Argon2id parameters")
 )
 
 // Header is the parsed leading metadata of a vault file.
@@ -102,6 +103,9 @@ func parseHeader(b []byte) (Header, []byte, error) {
 	h.Params.Time = binary.BigEndian.Uint32(b[6:10])
 	h.Params.MemKiB = binary.BigEndian.Uint32(b[10:14])
 	h.Params.Threads = b[14]
+	if err := validateParams(h.Params); err != nil {
+		return Header{}, nil, err
+	}
 	copy(h.Salt[:], b[15:15+saltLen])
 	copy(h.Nonce[:], b[15+saltLen:15+saltLen+nonceLen])
 	return h, b[headerLen:], nil
@@ -130,6 +134,9 @@ func DeriveKey(password []byte, salt []byte, p Argon2idParams) []byte {
 // encryption; this both shrinks realistic vaults (lots of repeated JSON keys)
 // and obscures plaintext length signals.
 func Encrypt(plaintext, password []byte, params Argon2idParams) ([]byte, error) {
+	if err := validateParams(params); err != nil {
+		return nil, err
+	}
 	var salt [saltLen]byte
 	if _, err := rand.Read(salt[:]); err != nil {
 		return nil, fmt.Errorf("rand salt: %w", err)
@@ -231,6 +238,9 @@ func EncryptWithKey(plaintext, key []byte, salt [saltLen]byte, params Argon2idPa
 	if len(key) != keyLen {
 		return nil, fmt.Errorf("vault: bad key length %d", len(key))
 	}
+	if err := validateParams(params); err != nil {
+		return nil, err
+	}
 	var nonce [nonceLen]byte
 	if _, err := rand.Read(nonce[:]); err != nil {
 		return nil, fmt.Errorf("rand nonce: %w", err)
@@ -266,6 +276,20 @@ func EncryptWithKey(plaintext, key []byte, salt [saltLen]byte, params Argon2idPa
 	})
 	out.Write(ct)
 	return out.Bytes(), nil
+}
+
+func validateParams(p Argon2idParams) error {
+	const (
+		maxTime    = 10
+		maxMemKiB  = 256 * 1024
+		maxThreads = 16
+	)
+	if p.Time == 0 || p.Time > maxTime ||
+		p.Threads == 0 || p.Threads > maxThreads ||
+		p.MemKiB < 8*uint32(p.Threads) || p.MemKiB > maxMemKiB {
+		return ErrBadParams
+	}
+	return nil
 }
 
 func wipe(b []byte) {

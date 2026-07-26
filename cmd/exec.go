@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -17,12 +18,14 @@ import (
 // for the interactive exec flow. Kept as a single constant so the flag default
 // and the runOnAll fallback can't drift apart.
 const defaultExecParallel = 8
+const defaultExecTimeout = 5 * time.Minute
 
 var (
 	execAll      bool
 	execGroup    string
 	execServers  []string
 	execParallel int
+	execTimeout  time.Duration
 )
 
 var execCmd = &cobra.Command{
@@ -45,8 +48,11 @@ var execCmd = &cobra.Command{
 		cmdline := strings.Join(args, " ")
 		fmt.Println(ui.Infof(fmt.Sprintf("running on %d server(s): %s", len(targets), cmdline)))
 
-		results := runOnAll(saved.Vault, targets, cmdline, execParallel)
-		printExecResults(results)
+		results := runOnAll(saved.Vault, targets, cmdline, execParallel, execTimeout)
+		failed := printExecResults(results)
+		if failed > 0 {
+			return fmt.Errorf("%d server(s) failed", failed)
+		}
 		return nil
 	},
 }
@@ -56,6 +62,7 @@ func init() {
 	execCmd.Flags().StringVarP(&execGroup, "group", "g", "", "run on servers in this group")
 	execCmd.Flags().StringSliceVarP(&execServers, "servers", "s", nil, "comma-separated server names/indices")
 	execCmd.Flags().IntVarP(&execParallel, "parallel", "p", defaultExecParallel, "max concurrent connections")
+	execCmd.Flags().DurationVar(&execTimeout, "timeout", defaultExecTimeout, "per-server command timeout (0 disables)")
 	rootCmd.AddCommand(execCmd)
 }
 
@@ -88,7 +95,7 @@ type execResult struct {
 	Elapsed time.Duration
 }
 
-func runOnAll(v *store.Vault, targets []store.Server, cmdline string, parallelism int) []execResult {
+func runOnAll(v *store.Vault, targets []store.Server, cmdline string, parallelism int, timeout time.Duration) []execResult {
 	if parallelism <= 0 {
 		parallelism = defaultExecParallel
 	}
@@ -112,7 +119,13 @@ func runOnAll(v *store.Vault, targets []store.Server, cmdline string, parallelis
 				return
 			}
 			defer client.Close()
-			out, exit, err := sshc.Run(client, cmdline)
+			ctx := context.Background()
+			cancel := func() {}
+			if timeout > 0 {
+				ctx, cancel = context.WithTimeout(ctx, timeout)
+			}
+			defer cancel()
+			out, exit, err := sshc.Run(ctx, client, cmdline)
 			res.Output = out
 			res.Exit = exit
 			res.Err = err
@@ -122,7 +135,7 @@ func runOnAll(v *store.Vault, targets []store.Server, cmdline string, parallelis
 	return results
 }
 
-func printExecResults(results []execResult) {
+func printExecResults(results []execResult) int {
 	var ok, failed int
 	for _, r := range results {
 		header := fmt.Sprintf("[%s] %s@%s (%s)",
@@ -144,6 +157,7 @@ func printExecResults(results []execResult) {
 	}
 	fmt.Println()
 	fmt.Println(ui.Heading.Render(fmt.Sprintf("%d ok / %d failed", ok, failed)))
+	return failed
 }
 
 func indent(s, prefix string) string {

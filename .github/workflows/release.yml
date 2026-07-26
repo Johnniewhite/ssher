@@ -23,6 +23,12 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Verify
+        run: |
+          test -z "$(gofmt -l .)"
+          go vet ./...
+          go test -race ./...
+
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:

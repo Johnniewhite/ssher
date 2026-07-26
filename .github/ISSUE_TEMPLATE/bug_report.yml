@@ -1,0 +1,47 @@
+name: Bug report
+description: Report reproducible incorrect behavior in ssher
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Never include master passwords, stored credentials, private keys, vault files, or unredacted server addresses.
+        Report suspected vulnerabilities privately using the process in SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: ssher version
+      description: Output from `ssher --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest safe sequence that reproduces the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized output
+      render: shell

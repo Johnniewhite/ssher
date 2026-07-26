@@ -77,11 +77,11 @@ type Profile struct {
 
 // Vault is the document round-tripped through encryption.
 type Vault struct {
-	Version  int            `json:"version"`
-	Servers  []Server       `json:"servers"`
-	Profiles []Profile      `json:"profiles,omitempty"`
+	Version  int               `json:"version"`
+	Servers  []Server          `json:"servers"`
+	Profiles []Profile         `json:"profiles,omitempty"`
 	Aliases  map[string]string `json:"aliases,omitempty"` // alias -> canonical server name
-	History  []HistoryEntry `json:"history,omitempty"`
+	History  []HistoryEntry    `json:"history,omitempty"`
 }
 
 const CurrentVaultVersion = 1

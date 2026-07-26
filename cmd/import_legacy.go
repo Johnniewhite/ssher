@@ -95,17 +95,14 @@ before deleting them. Pass --replace to remove them on success.`,
 			return err
 		}
 
-		// Initialise then write all imported state.
-		fresh, err := store.InitialiseEmpty([]byte(newPw))
+		// Write the complete imported document atomically so interruption can
+		// never leave a new-format but empty vault blocking a retry.
+		fresh, err := store.Initialise(newVault, []byte(newPw))
 		if err != nil {
 			return err
 		}
-		fresh.Vault.Servers = newVault.Servers
-		fresh.Vault.Profiles = newVault.Profiles
-		fresh.Vault.Aliases = newVault.Aliases
-		fresh.Vault.History = newVault.History
-		if err := fresh.SaveAndRefreshSession(); err != nil {
-			return err
+		if err := vault.SaveSession(fresh.Key, fresh.Salt); err != nil {
+			fmt.Println(ui.Warnf(fmt.Sprintf("import succeeded, but session refresh failed: %v", err)))
 		}
 
 		fmt.Println(ui.Successf(fmt.Sprintf(

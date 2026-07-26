@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -37,8 +38,13 @@ var connectCmd = &cobra.Command{
 
 func init() {
 	connectCmd.Flags().BoolVar(&connectReconnect, "reconnect", false, "auto-reconnect on disconnect")
-	connectCmd.Flags().IntVar(&connectMaxRetries, "max-retries", 3, "max reconnection attempts (with --reconnect)")
+	connectCmd.Flags().IntVar(&connectMaxRetries, "max-retries", 0, "override max reconnection attempts")
 	connectCmd.Flags().BoolVar(&connectRecord, "record", false, "record the session to ~/.ssher/recordings")
+	// Mirror connect flags on the root command so the documented shorthand
+	// `ssher prod --reconnect` behaves like `ssher connect prod --reconnect`.
+	rootCmd.Flags().BoolVar(&connectReconnect, "reconnect", false, "auto-reconnect on disconnect")
+	rootCmd.Flags().IntVar(&connectMaxRetries, "max-retries", 0, "override max reconnection attempts")
+	rootCmd.Flags().BoolVar(&connectRecord, "record", false, "record the session to ~/.ssher/recordings")
 	rootCmd.AddCommand(connectCmd)
 }
 
@@ -55,13 +61,13 @@ func runConnect(c *cobra.Command, args []string) error {
 		fmt.Println(ui.Muted.Render(fmt.Sprintf("(matched %s)", how)))
 	}
 
-	reconnect := connectReconnect || target.AutoReconnect
-	maxRetries := connectMaxRetries
-	if maxRetries <= 0 {
-		maxRetries = target.MaxReconnectRetries
-	}
-	if maxRetries <= 0 {
-		maxRetries = 3
+	reconnectSet := c != nil && c.Flags().Changed("reconnect")
+	retriesSet := c != nil && c.Flags().Changed("max-retries")
+	reconnect, maxRetries, err := resolveConnectionPolicy(
+		target, connectReconnect, reconnectSet, connectMaxRetries, retriesSet,
+	)
+	if err != nil {
+		return err
 	}
 
 	for attempt := 0; ; attempt++ {
@@ -78,16 +84,36 @@ func runConnect(c *cobra.Command, args []string) error {
 	}
 }
 
+func resolveConnectionPolicy(target *store.Server, reconnectValue, reconnectSet bool, retriesValue int, retriesSet bool) (bool, int, error) {
+	reconnect := target.AutoReconnect
+	if reconnectSet {
+		reconnect = reconnectValue
+	}
+	maxRetries := target.MaxReconnectRetries
+	if retriesSet {
+		if retriesValue < 0 {
+			return false, 0, fmt.Errorf("--max-retries cannot be negative")
+		}
+		maxRetries = retriesValue
+	} else if maxRetries <= 0 {
+		maxRetries = 3
+	}
+	return reconnect, maxRetries, nil
+}
+
 func connectOnce(saved *store.Saved, target *store.Server) error {
 	start := time.Now()
 	client, err := sshc.Dial(saved.Vault, target)
 	if err != nil {
-		recordHistory(saved, target, time.Since(start), false, err.Error())
-		return err
+		historyErr := recordHistory(saved, target, time.Since(start), false, false, err.Error())
+		return errors.Join(err, historyErr)
 	}
 	defer client.Close()
 
 	fmt.Println(ui.Successf(fmt.Sprintf("connected to %s (%s@%s:%d)", target.Name, target.User, target.Host, target.Port)))
+	if target.X11Forward {
+		fmt.Println(ui.Warnf("native X11 forwarding is unsupported; X11 settings apply only to `export-config`"))
+	}
 
 	opts := sshc.InteractiveOptions{}
 	if connectRecord {
@@ -101,8 +127,8 @@ func connectOnce(saved *store.Saved, target *store.Server) error {
 
 	err = sshc.Interactive(client, opts)
 	dur := time.Since(start)
-	recordHistory(saved, target, dur, err == nil, errString(err))
-	return err
+	historyErr := recordHistory(saved, target, dur, true, err == nil, errString(err))
+	return errors.Join(err, historyErr)
 }
 
 func openRecording(title string) (*recording.Writer, int, int) {
@@ -126,7 +152,7 @@ func terminalHeight() int {
 	return h
 }
 
-func recordHistory(saved *store.Saved, s *store.Server, dur time.Duration, ok bool, msg string) {
+func recordHistory(saved *store.Saved, s *store.Server, dur time.Duration, established, ok bool, msg string) error {
 	saved.Vault.RecordHistory(store.HistoryEntry{
 		ServerName:   s.Name,
 		Host:         s.Host,
@@ -136,11 +162,15 @@ func recordHistory(saved *store.Saved, s *store.Server, dur time.Duration, ok bo
 		Success:      ok,
 		ErrorMessage: msg,
 	})
-	_ = saved.Vault.UpdateServer(s.Name, func(srv *store.Server) {
-		srv.LastConnected = time.Now().UTC().Format(time.RFC3339)
-		srv.ConnectionCount++
-	})
-	_ = saved.Save()
+	if established {
+		if err := saved.Vault.UpdateServer(s.Name, func(srv *store.Server) {
+			srv.LastConnected = time.Now().UTC().Format(time.RFC3339)
+			srv.ConnectionCount++
+		}); err != nil {
+			return err
+		}
+	}
+	return saved.SaveAndRefreshSession()
 }
 
 func errString(err error) string {

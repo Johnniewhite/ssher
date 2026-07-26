@@ -70,6 +70,25 @@ func TestDecryptTruncated(t *testing.T) {
 	}
 }
 
+func TestDecryptRejectsUnsafeKDFBeforeDerivation(t *testing.T) {
+	blob, err := Encrypt([]byte("hi"), []byte("pw"), testParams)
+	if err != nil {
+		t.Fatalf("encrypt: %v", err)
+	}
+	// Memory begins at byte 10 in the header. An unauthenticated local change
+	// must not be able to force an unbounded Argon2 allocation.
+	blob[10], blob[11], blob[12], blob[13] = 0xff, 0xff, 0xff, 0xff
+	if _, _, err := Decrypt(blob, []byte("pw")); err != ErrBadParams {
+		t.Fatalf("got %v, want ErrBadParams", err)
+	}
+}
+
+func TestEncryptRejectsZeroKDFParameters(t *testing.T) {
+	if _, err := Encrypt([]byte("hi"), []byte("pw"), Argon2idParams{}); err != ErrBadParams {
+		t.Fatalf("got %v, want ErrBadParams", err)
+	}
+}
+
 func TestEncryptWithKeyMatches(t *testing.T) {
 	// Decrypt via password, then re-encrypt via the derived key with the
 	// SAME salt, then decrypt again -- should round-trip identically.
