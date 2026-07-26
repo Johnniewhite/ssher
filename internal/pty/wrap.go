@@ -158,7 +158,9 @@ func watchAndInject(ptmx io.ReadWriter, password string, patterns []string, stdo
 			}
 		}
 		if err != nil {
-			if errors.Is(err, io.EOF) {
+			// Linux PTY masters return EIO when the slave side closes. It is
+			// the PTY equivalent of EOF, not a failed wrapped command.
+			if errors.Is(err, io.EOF) || errors.Is(err, syscall.EIO) {
 				return nil
 			}
 			return err

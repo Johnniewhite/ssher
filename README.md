@@ -7,6 +7,7 @@
 </p>
 
 <p align="center">
+  <a href="https://getssher.com"><img alt="Website" src="https://img.shields.io/badge/website-getssher.com-49f58a"></a>
   <a href="https://pkg.go.dev/github.com/johnniewhite/ssher"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/johnniewhite/ssher.svg"></a>
   <a href="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://goreportcard.com/report/github.com/johnniewhite/ssher"><img alt="Go Report" src="https://goreportcard.com/badge/github.com/johnniewhite/ssher"></a>
@@ -176,6 +177,8 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [architecture guide](docs/ARCHITECTURE.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Do not report vulnerabilities or submit real credentials through public issues. Follow the private process in [SECURITY.md](SECURITY.md). Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
+
+The source and deployment notes for [getssher.com](https://getssher.com) are in [`website/`](website/) and [the website guide](docs/WEBSITE.md).
 
 ## License
 

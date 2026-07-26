@@ -1,0 +1,39 @@
+{
+	email admin@getssher.com
+}
+
+www.getssher.com {
+	redir https://getssher.com{uri} permanent
+}
+
+getssher.com {
+	root * /srv
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
+		-Server
+	}
+
+	@immutable path /favicon.svg /social-card.svg /social-card.png /main.js /styles.css
+	header @immutable Cache-Control "public, max-age=3600"
+
+	file_server {
+		hide .git
+	}
+
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
