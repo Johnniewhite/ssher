@@ -1,0 +1,16 @@
+{
+  "name": "ssher",
+  "short_name": "ssher",
+  "description": "Your SSH fleet, one command away.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07110d",
+  "theme_color": "#07110d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

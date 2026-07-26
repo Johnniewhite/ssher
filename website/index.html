@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ssher — Your SSH fleet, one command away</title>
+  <meta name="description" content="An open-source, encrypted SSH server manager with native SSH/SFTP, parallel fleet execution, session recording, and an sshpass-compatible wrapper.">
+  <meta name="theme-color" content="#07110d">
+  <link rel="canonical" href="https://getssher.com/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ssher — Your SSH fleet, one command away">
+  <meta property="og:description" content="Encrypted server vault. Native SSH and SFTP. Parallel fleet execution. One open-source Go binary.">
+  <meta property="og:url" content="https://getssher.com/">
+  <meta property="og:image" content="https://getssher.com/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ssher — Your SSH fleet, one command away">
+  <meta name="twitter:description" content="The open-source SSH companion that actually remembers your servers.">
+  <meta name="twitter:image" content="https://getssher.com/social-card.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ssher",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "macOS, Linux",
+      "description": "An open-source encrypted SSH server manager written in Go.",
+      "downloadUrl": "https://github.com/Johnniewhite/ssher/releases/latest",
+      "softwareHelp": "https://github.com/Johnniewhite/ssher#readme",
+      "license": "https://opensource.org/license/mit",
+      "codeRepository": "https://github.com/Johnniewhite/ssher"
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <nav class="nav shell" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="ssher home">
+        <span class="brand-mark" aria-hidden="true">&gt;_</span>
+        <span>ssher</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#security">Security</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/Johnniewhite/ssher">GitHub</a>
+      </div>
+      <a class="button button-small button-ghost" href="https://github.com/Johnniewhite/ssher/releases/latest">
+        Download
+      </a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <a class="eyebrow" href="https://github.com/Johnniewhite/ssher" aria-label="View ssher on GitHub">
+          <span class="pulse" aria-hidden="true"></span>
+          Open source · MIT licensed
+        </a>
+        <h1>Your SSH fleet.<br><span>One command away.</span></h1>
+        <p class="hero-lede">
+          Save servers in an encrypted vault, connect by name, move files with native SFTP,
+          and run commands across your fleet—all from one Go binary.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#install">Install ssher</a>
+          <a class="button button-secondary" href="https://github.com/Johnniewhite/ssher">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .7A11.5 11.5 0 0 0 8.36 23.1c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.16 1.18A10.96 10.96 0 0 1 12 6.12c.98 0 1.95.13 2.87.39 2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.08 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.15v3.26c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+            View source
+          </a>
+        </div>
+        <div class="proof-row" aria-label="Project highlights">
+          <span>macOS + Linux</span>
+          <span>Native SSH</span>
+          <span>AES-256-GCM</span>
+          <span>No runtime</span>
+        </div>
+      </div>
+
+      <div class="terminal-wrap" aria-label="ssher terminal demonstration">
+        <div class="terminal-glow" aria-hidden="true"></div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span>ssher — zsh</span>
+            <span class="terminal-status">encrypted</span>
+          </div>
+          <div class="terminal-body">
+            <p><span class="prompt">$</span> ssher list</p>
+            <div class="server-table">
+              <div class="table-head"><span>NAME</span><span>HOST</span><span>STATUS</span></div>
+              <div><span><b>production</b></span><span>10.0.4.21</span><span class="online">● online</span></div>
+              <div><span><b>staging</b></span><span>10.0.2.18</span><span class="online">● online</span></div>
+              <div><span><b>database</b></span><span>10.0.7.09</span><span class="online">● online</span></div>
+            </div>
+            <p class="command-line"><span class="prompt">$</span> <span id="demo-command">ssher production</span><span class="cursor" aria-hidden="true"></span></p>
+            <p class="muted">[i] matched alias → production-web</p>
+            <p><span class="success">[ok]</span> connected to production-web</p>
+            <p><span class="remote">deploy@web1:~$</span> <span class="cursor cursor-still" aria-hidden="true"></span></p>
+          </div>
+          <div class="terminal-foot">
+            <span>vault: unlocked</span>
+            <span>known_hosts: verified</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ticker" aria-label="Core capabilities">
+      <div>
+        <span>ENCRYPTED VAULT</span><i>✦</i>
+        <span>NATIVE SFTP</span><i>✦</i>
+        <span>FLEET EXEC</span><i>✦</i>
+        <span>PORT FORWARDING</span><i>✦</i>
+        <span>SESSION RECORDING</span><i>✦</i>
+        <span>SSH WRAPPER</span>
+      </div>
+    </section>
+
+    <section class="section shell" id="features">
+      <div class="section-heading">
+        <p class="kicker">Built for the terminal</p>
+        <h2>Everything between you<br>and your servers, simplified.</h2>
+        <p>Keep the power of SSH. Lose the aliases, scattered config files, and repetitive flags.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card feature-card-large">
+          <div class="feature-icon">&gt;_</div>
+          <p class="feature-label">Connect naturally</p>
+          <h3>Remember names,<br>not connection strings.</h3>
+          <p>Connect by name, index, alias, or fuzzy match. Favorites, groups, and profiles keep growing fleets navigable.</p>
+          <div class="mini-terminal">
+            <span class="prompt">$</span> ssher prod
+            <span class="mini-result">✓ connected in 218ms</span>
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">⌘</div>
+          <p class="feature-label">Parallel execution</p>
+          <h3>One command.<br>Every server.</h3>
+          <p>Fan commands across all servers or a selected group with bounded, native Go concurrency.</p>
+          <div class="fleet-visual" aria-hidden="true">
+            <span class="fleet-source">&gt;_</span>
+            <i></i><i></i><i></i>
+            <span>web</span><span>api</span><span>db</span>
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">⇄</div>
+          <p class="feature-label">Native transfer</p>
+          <h3>SFTP without<br>leaving the tool.</h3>
+          <p>Upload and download through the same saved connection. Sync through rsync when key authentication is available.</p>
+          <div class="progress-demo">
+            <div><span>build.tar.gz</span><b>100%</b></div>
+            <i><b></b></i>
+            <small>42.8 MB · uploaded</small>
+          </div>
+        </article>
+        <article class="feature-card feature-card-wide" id="security">
+          <div class="security-copy">
+            <div class="feature-icon">◇</div>
+            <p class="feature-label">Encrypted by design</p>
+            <h3>Your credentials stay yours.</h3>
+            <p>
+              Server credentials are encrypted locally with AES-256-GCM and an Argon2id-derived key.
+              Host keys are checked through <code>known_hosts</code>, and changed keys are rejected.
+            </p>
+            <a class="text-link" href="https://github.com/Johnniewhite/ssher#security-model">Read the security model <span>→</span></a>
+          </div>
+          <div class="vault-visual" aria-label="Vault security layers">
+            <div class="vault-ring vault-ring-outer"></div>
+            <div class="vault-ring vault-ring-middle"></div>
+            <div class="vault-core">
+              <svg aria-hidden="true" viewBox="0 0 48 48"><path d="M24 4 8 10v11c0 10.3 6.8 19.4 16 22.2C33.2 40.4 40 31.3 40 21V10L24 4Zm0 7.2 9 3.4V21c0 6.7-3.8 12.8-9 15.3-5.2-2.5-9-8.6-9-15.3v-6.4l9-3.4Zm0 5.3a4.5 4.5 0 0 0-2.2 8.4v5.6h4.4v-5.6a4.5 4.5 0 0 0-2.2-8.4Z"/></svg>
+              <span>VAULT</span>
+            </div>
+            <span class="orbit-label orbit-one">Argon2id</span>
+            <span class="orbit-label orbit-two">AES-256</span>
+            <span class="orbit-label orbit-three">0600</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section workflow-section">
+      <div class="shell">
+        <div class="section-heading compact">
+          <p class="kicker">From zero to connected</p>
+          <h2>Three commands. That's it.</h2>
+        </div>
+        <ol class="steps">
+          <li>
+            <span class="step-number">01</span>
+            <div><code>ssher add</code><p>Save a server through the guided terminal form.</p></div>
+          </li>
+          <li>
+            <span class="step-number">02</span>
+            <div><code>ssher list</code><p>See every server, alias, group, and status.</p></div>
+          </li>
+          <li>
+            <span class="step-number">03</span>
+            <div><code>ssher production</code><p>Connect directly—no flags or config archaeology.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section shell install-section" id="install">
+      <div class="install-panel">
+        <div class="install-copy">
+          <p class="kicker">Install in seconds</p>
+          <h2>One binary.<br>Zero runtime.</h2>
+          <p>Choose Homebrew, a pre-built release, or install directly from source. ssher supports macOS and Linux on Intel and ARM.</p>
+          <a class="text-link" href="https://github.com/Johnniewhite/ssher/releases/latest">Browse every release <span>→</span></a>
+        </div>
+        <div class="install-terminal">
+          <div class="install-tabs" role="tablist" aria-label="Installation method">
+            <button class="active" role="tab" aria-selected="true" data-command="brew tap johnniewhite/ssher &amp;&amp; brew install ssher">Homebrew</button>
+            <button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button>
+          </div>
+          <div class="copy-row">
+            <code id="install-command">brew tap johnniewhite/ssher &amp;&amp; brew install ssher</code>
+            <button class="copy-button" type="button" data-copy-target="install-command" aria-label="Copy installation command">Copy</button>
+          </div>
+          <div class="install-result">
+            <span class="success">✓</span>
+            <span>ssher installed successfully</span>
+            <small>Run <code>ssher</code> to begin</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell open-source-section">
+      <div class="open-source-panel">
+        <div>
+          <p class="kicker">Yours to inspect. Yours to improve.</p>
+          <h2>Open source from the first commit.</h2>
+          <p>Read the code, audit the cryptography, open an issue, or send a pull request. ssher is MIT licensed and built in public.</p>
+        </div>
+        <div class="repo-card">
+          <div class="repo-head">
+            <span class="brand-mark">&gt;_</span>
+            <div><b>Johnniewhite/ssher</b><small>Public repository</small></div>
+          </div>
+          <p>Ultimate SSH configuration manager written in Go.</p>
+          <div class="repo-meta"><span><i class="go-dot"></i> Go</span><span>MIT License</span></div>
+          <a class="button button-primary button-block" href="https://github.com/Johnniewhite/ssher">Explore on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-grid">
+      <a class="brand" href="/"><span class="brand-mark">&gt;_</span><span>ssher</span></a>
+      <p>The SSH companion that actually remembers your servers.</p>
+      <nav aria-label="Footer navigation">
+        <a href="https://github.com/Johnniewhite/ssher">GitHub</a>
+        <a href="https://github.com/Johnniewhite/ssher/releases">Releases</a>
+        <a href="https://github.com/Johnniewhite/ssher/blob/main/SECURITY.md">Security</a>
+        <a href="https://github.com/Johnniewhite/ssher/blob/main/CONTRIBUTING.md">Contribute</a>
+      </nav>
+    </div>
+    <div class="shell footer-bottom">
+      <span>© <span id="year">2026</span> ssher contributors</span>
+      <span>Built with Go · secured with care</span>
+    </div>
+  </footer>
+  <script src="/main.js" defer></script>
+</body>
+</html>
