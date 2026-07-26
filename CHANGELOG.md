@@ -4,6 +4,8 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-26
+
 ### Security
 
 - Preserve the Argon2id parameters associated with cached vault keys and safely ratchet weak vaults during password-based unlock.
@@ -16,10 +18,12 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 - Support agent-only authentication and standard Ed25519, ECDSA, and RSA default key paths.
 - Honor keepalive and reconnect settings, bare-target connection flags, fleet execution timeouts, and remote failure exit status.
 - Normalize aliases, remote forwarding, connection statistics, PTY no-prompt operation, and recording filenames.
+- Treat Linux PTY closure as end-of-file so no-prompt wrapped commands exit cleanly.
 
 ### Documentation
 
 - Add contributor, security, conduct, architecture, issue, pull-request, and CI documentation.
+- Add the open-source [getssher.com](https://getssher.com) project website and reproducible Caddy deployment.
 
 ## [0.1.1] - 2026-06-20
 
@@ -31,6 +35,7 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 - Initial Go rewrite with encrypted vaults, native SSH/SFTP, fleet execution, recordings, import/export, and release automation.
 
-[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Johnniewhite/ssher/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Johnniewhite/ssher/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Johnniewhite/ssher/releases/tag/v0.1.0
