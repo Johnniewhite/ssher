@@ -2,7 +2,9 @@ package pty
 
 import (
 	"bytes"
+	"io"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -43,4 +45,32 @@ type unexpectedExitError struct {
 
 func (e *unexpectedExitError) Error() string {
 	return "unexpected child exit"
+}
+
+func TestWatchAndInjectTreatsLinuxPTYCloseAsEOF(t *testing.T) {
+	var stdout bytes.Buffer
+	stream := &eioReadWriter{Reader: strings.NewReader("key auth complete\n")}
+
+	if err := watchAndInject(stream, "unused", DefaultPromptPatterns, &stdout); err != nil {
+		t.Fatalf("watchAndInject: %v", err)
+	}
+	if got := stdout.String(); got != "key auth complete\n" {
+		t.Fatalf("stdout = %q", got)
+	}
+}
+
+type eioReadWriter struct {
+	io.Reader
+}
+
+func (rw *eioReadWriter) Read(p []byte) (int, error) {
+	n, err := rw.Reader.Read(p)
+	if err == io.EOF {
+		return n, syscall.EIO
+	}
+	return n, err
+}
+
+func (rw *eioReadWriter) Write(p []byte) (int, error) {
+	return len(p), nil
 }
