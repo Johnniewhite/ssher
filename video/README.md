@@ -4,10 +4,12 @@ The Remotion source for the 30-second ssher Cloud announcement film. The
 composition is 1920×1080 at 30fps and tells the launch story through a familiar
 mobile group conversation before opening into the browser terminal experience.
 
-The soundtrack is original and deterministic. It is generated from code as
-44.1kHz stereo PCM and includes a musical bed, distinct incoming/outgoing
-message tones, keyboard detail, transitions, and a service-restart confirmation.
-No remote or copyrighted sound assets are required.
+The soundtrack combines the licensed cinematic track “Driving Ambition” by
+Ahjay Stelino with original, deterministic interface sound design generated
+from code as 44.1kHz stereo PCM. The custom layer contains distinct
+incoming/outgoing message tones, keyboard detail, transitions, and a
+service-restart confirmation. See `public/audio/THIRD_PARTY_ASSETS.md` for the
+music source, license, and integrity hash.
 
 ## Storyboard
 
@@ -39,6 +41,7 @@ npx remotion ffprobe out/ssher-cloud-launch.mp4
 
 The H.264/AAC master is written to `out/ssher-cloud-launch.mp4`.
 
-The source is MIT licensed with the ssher project. Remotion itself has separate
-licensing requirements for some commercial teams; consult Remotion's current
-license before commercial production use.
+The ssher source and original sound-design code are MIT licensed. The music is
+used under the Mixkit Stock Music Free License and is not relicensed under MIT.
+Remotion itself has separate licensing requirements for some commercial teams;
+consult Remotion's current license before commercial production use.

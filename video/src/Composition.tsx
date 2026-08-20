@@ -5,9 +5,18 @@ import { SsherCloudAnnouncement } from "./cloud-announcement";
 export const SsherCloudLaunchFilm: React.FC = () => (
   <AbsoluteFill>
     <Audio
-      src={staticFile("audio/ssher-cloud-score.wav")}
+      src={staticFile("audio/mixkit-driving-ambition-32.mp3")}
       volume={(frame) =>
-        interpolate(frame, [0, 20, 840, 899], [0, 0.92, 0.92, 0], {
+        interpolate(frame, [0, 36, 780, 899], [0, 0.46, 0.46, 0], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })
+      }
+    />
+    <Audio
+      src={staticFile("audio/ssher-cloud-sfx.wav")}
+      volume={(frame) =>
+        interpolate(frame, [0, 12, 870, 899], [0, 0.78, 0.78, 0], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         })

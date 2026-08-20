@@ -24,7 +24,7 @@
   },
   "scripts": {
     "dev": "remotion studio",
-    "audio": "node scripts/generate-audio.mjs",
+    "audio": "node scripts/download-music.mjs && node scripts/generate-audio.mjs",
     "build": "remotion bundle",
     "render": "remotion render SsherCloudLaunch out/ssher-cloud-launch.mp4 --codec=h264 --crf=16 --concurrency=2",
     "stills": "remotion still SsherCloudLaunch",

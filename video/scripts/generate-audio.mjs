@@ -87,60 +87,6 @@ const noise = ({
   }
 };
 
-const kick = (start, amp = 0.72) => {
-  sine({
-    start,
-    dur: 0.44,
-    freq: 156,
-    endFreq: 44,
-    amp,
-    release: 0.32,
-    harmonics: 0.15,
-  });
-  noise({
-    start,
-    dur: 0.035,
-    amp: amp * 0.28,
-    release: 0.03,
-    lowpass: 0.8,
-  });
-};
-
-const snare = (start, amp = 0.32) => {
-  noise({ start, dur: 0.22, amp, release: 0.18, lowpass: 0.68 });
-  sine({
-    start,
-    dur: 0.16,
-    freq: 182,
-    endFreq: 128,
-    amp: amp * 0.34,
-    release: 0.12,
-  });
-};
-
-const hat = (start, amp = 0.1, pan = 0) => {
-  noise({ start, dur: 0.055, amp, pan, release: 0.05, lowpass: 0.95 });
-};
-
-const bass = (start, freq, dur = 0.42, amp = 0.24) => {
-  sine({ start, dur, freq, amp, release: 0.16, harmonics: 0.7 });
-};
-
-const pad = (start, frequencies, dur, amp = 0.045) => {
-  frequencies.forEach((freq, index) => {
-    sine({
-      start,
-      dur,
-      freq,
-      amp,
-      pan: (index / Math.max(1, frequencies.length - 1)) * 1.2 - 0.6,
-      attack: 0.8,
-      release: 1.1,
-      harmonics: 0.18,
-    });
-  });
-};
-
 const impact = (start, amp = 0.55) => {
   sine({
     start,
@@ -188,9 +134,8 @@ const blip = (start, freq = 880, amp = 0.12, pan = 0) => {
   });
 };
 
-// A restrained, original electronic score. Message tones are written into the
-// same PCM track so the final render always contains real audio and never
-// depends on a remote asset.
+// Original interface sound design layered over the licensed music bed. Keeping
+// these cues deterministic makes message, terminal, and transition timing exact.
 noise({
   start: 0,
   dur: 9.6,
@@ -228,26 +173,6 @@ whoosh(22.65, 0.75, 0.2, -0.25);
 impact(23.0, 0.38);
 whoosh(27.05, 0.8, 0.25, 0);
 impact(27.48, 0.74);
-
-const beat = 0.5;
-const roots = [73.42, 87.31, 65.41, 98.0];
-for (let step = 0, t = 9.75; t < 29.3; t += beat, step++) {
-  const root = roots[Math.floor(step / 4) % roots.length];
-  kick(t, step % 8 === 0 ? 0.62 : 0.46);
-  if (step % 2 === 1) snare(t, 0.16);
-  bass(t + 0.02, step % 4 === 3 ? root * 1.5 : root, 0.39, 0.15);
-  hat(t + 0.25, step % 4 === 3 ? 0.1 : 0.055, step % 2 ? 0.35 : -0.35);
-}
-
-const chords = [
-  [146.83, 174.61, 220.0],
-  [174.61, 220.0, 261.63],
-  [130.81, 164.81, 196.0],
-  [196.0, 233.08, 293.66],
-];
-for (let t = 0, index = 0; t < 29.5; t += 4, index++) {
-  pad(t, chords[index % chords.length], 4.7, index < 2 ? 0.027 : 0.042);
-}
 
 // Keyboard taps and a rising confirmation tone for the service restart.
 for (let t = 14.15, index = 0; t < 16.72; t += 0.105, index++) {
@@ -288,12 +213,12 @@ for (let t = 27.45, i = 0; t < 29.45; t += 0.25, i++) {
     Math.sin(i) * 0.45,
   );
 }
-sine({ start: 27.48, dur: 2.25, freq: 293.66, amp: 0.1, release: 2.1 });
+sine({ start: 27.48, dur: 2.25, freq: 293.66, amp: 0.07, release: 2.1 });
 sine({
   start: 27.48,
   dur: 2.25,
   freq: 440,
-  amp: 0.065,
+  amp: 0.045,
   attack: 0.01,
   release: 2.1,
   pan: 0.25,
@@ -342,6 +267,6 @@ for (let i = 0; i < length; i++) {
   );
 }
 
-const output = path.join(outputDir, "ssher-cloud-score.wav");
+const output = path.join(outputDir, "ssher-cloud-sfx.wav");
 fs.writeFileSync(output, Buffer.concat([header, pcm]));
 console.log(`Generated ${output} (${duration}s, ${sampleRate}Hz stereo)`);
