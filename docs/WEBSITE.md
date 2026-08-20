@@ -1,8 +1,11 @@
 # Project website
 
 The source for [getssher.com](https://getssher.com) lives in `website/`. It is a
-dependency-free static site served by Caddy from the deployment files in
-`deploy/website/`.
+dependency-free static site. `deploy/website/` includes the production Nginx
+virtual host and a standalone Docker Compose + Caddy alternative.
+
+The ssher Cloud launch film is embedded from `website/ssher-cloud-launch.mp4`.
+Its editable Remotion source and deterministic audio generator live in `video/`.
 
 ## Local preview
 
@@ -16,34 +19,34 @@ Open `http://localhost:8080`.
 
 ## Production layout
 
-The server keeps a deployment checkout under `/opt/ssher-web`:
+Production uses immutable release directories and a movable `current` symlink:
 
 ```text
-/opt/ssher-web/
-├── Caddyfile
-├── compose.yml
-└── site/
+/var/www/ssher-marketing/
+├── current -> releases/<timestamp>
+└── releases/
+    └── <timestamp>/
 ```
 
-Caddy terminates HTTPS, redirects `www` to the apex domain, compresses static
-assets, and adds the security headers declared in `Caddyfile`. Its certificate
-and configuration state are stored in named Docker volumes.
+Nginx terminates the Cloudflare origin connection, redirects `www` to the apex,
+serves byte ranges for the launch film, and adds the security headers declared
+in `deploy/website/nginx.conf`. Cloudflare proxies the apex and `www` records in
+Full (strict) mode.
 
 ## Deploy
 
-Copy `website/` to `/opt/ssher-web/site/`, copy the two files in
-`deploy/website/` to `/opt/ssher-web/`, then validate and restart:
+Copy `website/` into a new timestamped directory, atomically point `current` at
+it, install `deploy/website/nginx.conf`, then validate and reload Nginx:
 
 ```sh
-docker compose -f /opt/ssher-web/compose.yml config --quiet
-docker compose -f /opt/ssher-web/compose.yml up -d
-docker compose -f /opt/ssher-web/compose.yml ps
+nginx -t
+systemctl reload nginx
 ```
 
-Before requesting a certificate, the DNS records for `getssher.com` and
-`www.getssher.com` must resolve to the production server. When Cloudflare proxying
-is enabled, its SSL/TLS mode should be **Full (strict)** after Caddy obtains the
-origin certificate.
+The certificate and key paths in the Nginx file expect a Cloudflare Origin CA
+certificate covering `getssher.com` and `www.getssher.com`. Keep the private key
+mode `0600`; never commit it. For a standalone host, the included Caddy setup can
+obtain and manage a publicly trusted certificate instead.
 
 ## Verification
 

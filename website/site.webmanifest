@@ -1,7 +1,7 @@
 {
   "name": "ssher",
   "short_name": "ssher",
-  "description": "Your SSH fleet, one command away.",
+  "description": "Your servers, right where you left them.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#07110d",

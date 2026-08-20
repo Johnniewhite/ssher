@@ -4,6 +4,28 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-20
+
+### Added
+
+- Add end-to-end encrypted ssher Cloud sync with browser-based device approval,
+  workspace linking, revision-aware pull/push/sync, and optional encrypted
+  private-key sharing.
+- Add cloud identity and team-assignment metadata to local server records while
+  keeping the existing encrypted vault format backward compatible.
+- Introduce ssher Cloud on the project website with browser SSH, team
+  workspaces, and resumable terminal sessions.
+- Add a 30-second Remotion announcement film with an original stereo score,
+  message tones, keyboard detail, and launch sound design.
+
+### Security
+
+- Generate a per-device P-256 identity and unwrap workspace keys locally.
+- Encrypt server payloads with AES-256-GCM and bind ciphertext to the workspace,
+  server identity, and revision through authenticated additional data.
+- Keep private-key files local by default; `--include-keys` is required before
+  key contents can be encrypted into a cloud server record.
+
 ## [0.1.2] - 2026-07-26
 
 ### Security
@@ -35,7 +57,8 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 - Initial Go rewrite with encrypted vaults, native SSH/SFTP, fleet execution, recordings, import/export, and release automation.
 
-[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Johnniewhite/ssher/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/Johnniewhite/ssher/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Johnniewhite/ssher/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Johnniewhite/ssher/releases/tag/v0.1.0

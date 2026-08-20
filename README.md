@@ -36,6 +36,7 @@ deploy@web1:~$
 - **Recordings.** `ssher prod --record` captures asciicast v2 you can replay with `ssher record replay`.
 - **Quality of life.** Profiles, aliases, favorites, groups, clipboard copy, CSV/JSON import-export, shell completion, `~/.ssh/config` export.
 - **Drop-in upgrade path.** `ssher import-legacy` migrates a Python-version Fernet vault in one shot.
+- **Encrypted team sync.** Link to SSHer Cloud and share server records without sending plaintext credentials to the service.
 
 ## Install
 
@@ -122,6 +123,21 @@ ssher backup                                # snapshot ~/.ssher/vault.bin
 ssher import-legacy                         # one-shot Fernet -> new format
 ```
 
+### End-to-end encrypted cloud sync
+
+```bash
+ssher cloud login                           # approve this device in the browser
+ssher cloud link --organization my-team    # choose a workspace
+ssher cloud pull                            # decrypt cloud servers into this vault
+ssher cloud push                            # encrypt local changes and upload
+ssher cloud sync                            # pull, then push non-conflicting changes
+```
+
+Private-key file contents are not uploaded by default. Use `ssher cloud push
+--include-keys` only when the key itself should be shared; it is encrypted
+inside the server payload before upload. Passwords and all server fields are
+always protected by the workspace key.
+
 Run `ssher --help` to see every subcommand.
 
 ## How it works
@@ -158,6 +174,9 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 - The master password is **never** written to disk. The session file caches an Argon2id-derived key, wrapped with a host-bound HKDF key. This machine binding is defense in depth; protect access to the local user account.
 - Plaintext exports (`export-csv`, default `export-json`) **omit passwords**. `--include-passwords` is the explicit opt-in.
 - SSH host keys use trust on first use through `~/.ssh/known_hosts`; changed keys are rejected.
+- SSHer Cloud uses a P-256 device key to unwrap an organization workspace key.
+  Server records are encrypted locally with AES-256-GCM and revision-bound AAD;
+  the Cloud API stores ciphertext and team access metadata only.
 
 | Path | Mode | Contents |
 | --- | --- | --- |
@@ -165,10 +184,13 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 | `~/.ssher/.session` | `0600` | cached vault key, host-bound, 30-minute expiry |
 | `~/.ssher/recordings/*.cast` | `0600` | asciicast v2 session recordings |
 | `~/.ssher/backups/vault-*.bin` | `0600` | `ssher backup` snapshots |
+| `~/.ssher/cloud.json` | `0600` | revocable Cloud session and linked workspace |
+| `~/.ssher/cloud-device-key.pem` | `0600` | P-256 device private key |
+| `~/.ssher/cloud-keys/*` | `0600` | private keys decrypted from managed Cloud records |
 
 ## Roadmap
 
-- **Workspaces** — share an encrypted server list across a small team, in design now.
+- **Workspace recovery and key rotation** for end-to-end encrypted team sync.
 - **Password injection for `rsync`** via the same PTY layer that powers `wrap`.
 - **Native X11 forwarding** with local display authentication and channel proxying.
 

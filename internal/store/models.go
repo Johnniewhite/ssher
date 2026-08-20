@@ -25,6 +25,10 @@ const (
 
 // Server is the central record in the vault.
 type Server struct {
+	CloudID             string            `json:"cloud_id,omitempty"`
+	CloudRevision       int64             `json:"cloud_revision,omitempty"`
+	CloudSyncedHash     string            `json:"cloud_synced_hash,omitempty"`
+	CloudTeamIDs        []string          `json:"cloud_team_ids,omitempty"`
 	Name                string            `json:"name"`
 	Host                string            `json:"host"`
 	User                string            `json:"user"`

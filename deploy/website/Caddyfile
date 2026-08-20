@@ -20,8 +20,11 @@ getssher.com {
 		-Server
 	}
 
-	@immutable path /favicon.svg /social-card.svg /social-card.png /main.js /styles.css
+	@immutable path /favicon.svg /social-card.svg /social-card.png /ssher-cloud-poster.jpg /main.js /styles.css
 	header @immutable Cache-Control "public, max-age=3600"
+
+	@media path /ssher-cloud-launch.mp4
+	header @media Cache-Control "public, max-age=86400"
 
 	file_server {
 		hide .git
