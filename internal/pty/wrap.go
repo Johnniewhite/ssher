@@ -18,6 +18,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/charmbracelet/x/xpty"
 	"golang.org/x/term"
@@ -94,10 +95,29 @@ func runWithIO(argv []string, password string, promptPatterns []string, stdin io
 	// otherwise successful interactive session.
 	go func() { _, _ = io.Copy(ptmx, stdin) }()
 
-	if err := watchAndInject(ptmx, password, promptPatterns, stdout); err != nil {
-		_ = cmd.Process.Kill()
-		_ = xpty.WaitProcess(context.Background(), cmd)
-		return -1, err
+	scanDone := make(chan error, 1)
+	go func() { scanDone <- watchAndInject(ptmx, password, promptPatterns, stdout) }()
+	waitDone := make(chan error, 1)
+	go func() { waitDone <- xpty.WaitProcess(context.Background(), cmd) }()
+
+	select {
+	case scanErr := <-scanDone:
+		if scanErr != nil {
+			_ = cmd.Process.Kill()
+			<-waitDone
+			return -1, scanErr
+		}
+	case waitErr := <-waitDone:
+		// Unix PTYs report EOF after the child exits. ConPTY keeps its output
+		// pipe open until the pseudo console is closed, so give buffered output
+		// a moment to drain and then close it to unblock the scanner.
+		select {
+		case <-scanDone:
+		case <-time.After(250 * time.Millisecond):
+			_ = ptmx.Close()
+			<-scanDone
+		}
+		return processResult(cmd, waitErr)
 	}
 
 	// The scanner hands PTY output off after injection (or after its bounded
@@ -109,18 +129,22 @@ func runWithIO(argv []string, password string, promptPatterns []string, stdin io
 		_, _ = io.Copy(stdout, ptmx)
 	}()
 
-	werr := xpty.WaitProcess(context.Background(), cmd)
+	werr := <-waitDone
 	// Closing the PTY unblocks the output copier.
 	_ = ptmx.Close()
 	<-outputDone
 
+	return processResult(cmd, werr)
+}
+
+func processResult(cmd *exec.Cmd, waitErr error) (int, error) {
 	if cmd.ProcessState != nil {
 		return cmd.ProcessState.ExitCode(), nil
 	}
-	if werr == nil {
+	if waitErr == nil {
 		return 0, nil
 	}
-	return -1, werr
+	return -1, waitErr
 }
 
 // watchAndInject reads PTY output, copying it to stdout as it streams, until
