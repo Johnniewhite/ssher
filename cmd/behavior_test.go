@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -93,7 +94,9 @@ func TestOpenPrivateOutputTightensExistingFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("stat: %v", err)
 	}
-	if got := info.Mode().Perm(); got != 0o600 {
+	// Windows reports synthetic Unix mode bits; confidentiality comes from
+	// the inherited user-profile ACL rather than chmod.
+	if got := info.Mode().Perm(); runtime.GOOS != "windows" && got != 0o600 {
 		t.Fatalf("mode = %o, want 600", got)
 	}
 }
