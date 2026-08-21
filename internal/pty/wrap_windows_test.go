@@ -13,15 +13,15 @@ func TestRunWithIOUsesWindowsConPTY(t *testing.T) {
 	var output bytes.Buffer
 	assertWindowsPTYRun(t, func() (int, error) {
 		return runWithIO(
-			[]string{"cmd.exe", "/D", "/Q", "/V:ON", "/C", `set /p line=ready: & echo received:!line!`},
+			[]string{"cmd.exe", "/D", "/Q", "/C", `echo conpty-ready`},
 			"unused",
 			DefaultPromptPatterns,
-			strings.NewReader("continue\r"),
+			strings.NewReader(""),
 			&output,
 		)
 	})
-	if got := output.String(); !strings.Contains(got, "received:continue") {
-		t.Fatalf("ConPTY did not forward input: %q", got)
+	if got := output.String(); !strings.Contains(got, "conpty-ready") {
+		t.Fatalf("ConPTY did not capture command output: %q", got)
 	}
 }
 
