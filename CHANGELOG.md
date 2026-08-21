@@ -4,6 +4,16 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-21
+
+### Fixed
+
+- Submit injected password prompts with the Windows ConPTY Enter sequence.
+- Close ConPTY after a wrapped no-prompt command exits so short-lived and
+  key-authenticated commands return normally instead of waiting indefinitely.
+- Exercise ConPTY command output, password injection, process exit, and the
+  complete Windows build in native Windows CI.
+
 ## [0.3.0] - 2026-08-21
 
 ### Added
@@ -76,7 +86,8 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 - Initial Go rewrite with encrypted vaults, native SSH/SFTP, fleet execution, recordings, import/export, and release automation.
 
-[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/Johnniewhite/ssher/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Johnniewhite/ssher/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Johnniewhite/ssher/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/Johnniewhite/ssher/compare/v0.1.1...v0.1.2
