@@ -146,7 +146,7 @@ func watchAndInject(ptmx io.ReadWriter, password string, patterns []string, stdo
 			low := strings.ToLower(seen.String())
 			for _, pat := range patterns {
 				if strings.Contains(low, strings.ToLower(pat)) {
-					if _, werr := io.WriteString(ptmx, password+"\n"); werr != nil {
+					if _, werr := io.WriteString(ptmx, formatPromptResponse(password)); werr != nil {
 						return fmt.Errorf("write password: %w", werr)
 					}
 					return nil
