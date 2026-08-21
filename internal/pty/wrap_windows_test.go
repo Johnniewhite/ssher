@@ -13,7 +13,7 @@ func TestRunWithIOUsesWindowsConPTY(t *testing.T) {
 	var output bytes.Buffer
 	assertWindowsPTYRun(t, func() (int, error) {
 		return runWithIO(
-			[]string{"cmd.exe", "/D", "/Q", "/V:ON", "/C", `set /p "line=ready: " & echo received:!line!`},
+			[]string{"cmd.exe", "/D", "/Q", "/V:ON", "/C", `set /p line=ready: & echo received:!line!`},
 			"unused",
 			DefaultPromptPatterns,
 			strings.NewReader("continue\r"),
@@ -29,7 +29,7 @@ func TestRunWithIOInjectsPasswordThroughWindowsConPTY(t *testing.T) {
 	var output bytes.Buffer
 	assertWindowsPTYRun(t, func() (int, error) {
 		return runWithIO(
-			[]string{"cmd.exe", "/D", "/Q", "/V:ON", "/C", `set /p "secret=Password: " & echo received:!secret!`},
+			[]string{"cmd.exe", "/D", "/Q", "/V:ON", "/C", `set /p secret=Password: & echo received:!secret!`},
 			"cloud-secret",
 			DefaultPromptPatterns,
 			strings.NewReader(""),
