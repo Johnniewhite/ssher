@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	sshc "github.com/johnniewhite/ssher/internal/ssh"
+	"github.com/johnniewhite/ssher/internal/telemetry"
 	"github.com/johnniewhite/ssher/internal/ui"
 )
 
@@ -42,6 +43,9 @@ var rootCmd = &cobra.Command{
 	Version:       Version,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		telemetry.MaybeReport(Version)
+	},
 	// `ssher`         -> interactive mode
 	// `ssher prod`    -> connect to server "prod"
 	// `ssher 3`       -> connect to server #3 in the sorted list

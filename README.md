@@ -210,6 +210,16 @@ On Windows, the same files live under `%USERPROFILE%\.ssher`. ACLs on the
 user profile provide the platform equivalent of Unix `0600` permissions, and
 vault/session updates use atomic replace semantics.
 
+### Anonymous installation count
+
+Released versions send one best-effort registration per version so the project
+can distinguish verified CLI use from GitHub archive downloads. The event
+contains a random installation UUID, operating system, CPU architecture,
+version, and generic source. It never contains commands, server details, vault
+data, usernames, hostnames, or account email. Set `SSHER_DISABLE_TELEMETRY=1`
+before running ssher to disable registration. See the
+[privacy guide](https://getssher.com/docs/security/#telemetry) for details.
+
 ## Roadmap
 
 - **Workspace recovery and key rotation** for end-to-end encrypted team sync.

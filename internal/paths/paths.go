@@ -52,6 +52,7 @@ func LegacyAliases() (string, error)   { return joinConfig("aliases.json") }
 func CloudConfigFile() (string, error) { return joinConfig("cloud.json") }
 func CloudKeyFile() (string, error)    { return joinConfig("cloud-device-key.pem") }
 func CloudKeysDir() (string, error)    { return joinConfig("cloud-keys") }
+func TelemetryFile() (string, error)   { return joinConfig("telemetry.json") }
 
 func joinConfig(name string) (string, error) {
 	dir, err := ConfigDir()

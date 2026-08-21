@@ -1,337 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ssher — Your servers, right where you left them</title>
-  <meta name="description" content="Manage SSH from the terminal or browser. ssher combines an encrypted local vault with team workspaces, browser SSH, and persistent cloud sessions.">
-  <meta name="theme-color" content="#07110d">
-  <link rel="canonical" href="https://getssher.com/">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="ssher Cloud — Your servers, right where you left them">
-  <meta property="og:description" content="Browser SSH, encrypted team workspaces, and cloud terminals you can detach and resume anywhere.">
-  <meta property="og:url" content="https://getssher.com/">
-  <meta property="og:image" content="https://getssher.com/social-card.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ssher Cloud — Your servers, right where you left them">
-  <meta name="twitter:description" content="Browser SSH, team workspaces, and persistent cloud terminals—alongside the open-source ssher CLI.">
-  <meta name="twitter:image" content="https://getssher.com/social-card.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ssher",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Windows, macOS, Linux",
-      "description": "An encrypted SSH manager for the terminal and browser, with team workspaces and persistent cloud sessions.",
-      "url": "https://getssher.com",
-      "downloadUrl": "https://github.com/Johnniewhite/ssher/releases/latest",
-      "softwareHelp": "https://github.com/Johnniewhite/ssher#readme",
-      "license": "https://opensource.org/license/mit",
-      "codeRepository": "https://github.com/Johnniewhite/ssher"
-    }
-  </script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ssher — Secure SSH, from terminal to Cloud</title>
+  <meta name="description" content="A fast, encrypted SSH manager for Windows, macOS, and Linux—with team workspaces and resumable browser terminals in ssher Cloud.">
+  <meta name="theme-color" content="#101a15"><link rel="canonical" href="https://getssher.com/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/site.webmanifest">
+  <meta property="og:type" content="website"><meta property="og:title" content="ssher — Secure SSH, from terminal to Cloud"><meta property="og:description" content="Every server, one command away. Open-source locally. Available everywhere with ssher Cloud."><meta property="og:url" content="https://getssher.com/"><meta property="og:image" content="https://getssher.com/social-card.png">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="ssher — Secure SSH, from terminal to Cloud"><meta name="twitter:description" content="Every server, one command away."><meta name="twitter:image" content="https://getssher.com/social-card.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ssher","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","description":"An encrypted SSH manager for the terminal and browser.","url":"https://getssher.com","downloadUrl":"https://github.com/Johnniewhite/ssher/releases/latest","softwareHelp":"https://getssher.com/docs/","license":"https://opensource.org/license/mit","codeRepository":"https://github.com/Johnniewhite/ssher"}</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="ambient ambient-one" aria-hidden="true"></div>
-  <div class="ambient ambient-two" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <nav class="nav shell" aria-label="Main navigation">
-      <a class="brand" href="/" aria-label="ssher home">
-        <span class="brand-mark" aria-hidden="true">&gt;_</span>
-        <span>ssher</span>
-      </a>
-      <div class="nav-links">
-        <a href="#cloud">Cloud</a>
-        <a href="#features">Features</a>
-        <a href="#security">Security</a>
-        <a href="#install">Install</a>
-        <a href="https://github.com/Johnniewhite/ssher">GitHub</a>
-      </div>
-      <a class="button button-small button-primary" href="https://cloud.getssher.com/login">
-        Open Cloud
-      </a>
-    </nav>
-  </header>
+  <header class="site-header"><nav class="nav shell" aria-label="Main navigation">
+    <a class="brand" href="/" aria-label="ssher home"><span class="brand-mark" aria-hidden="true">&gt;_</span><span class="brand-word">ssher</span></a>
+    <div class="nav-links" id="nav-links"><a href="#product">Product</a><a href="#cloud">Cloud</a><a href="#security">Security</a><a href="/docs/">Docs</a><a href="https://github.com/Johnniewhite/ssher">GitHub</a><div class="mobile-nav-actions"><a href="#install">Install CLI</a><a href="https://cloud.getssher.com/login">Open Cloud</a></div></div>
+    <div class="nav-actions"><a class="nav-signin" href="#install">Install CLI</a><a class="button button-lime button-small" href="https://cloud.getssher.com/login">Open Cloud <span>→</span></a></div>
+    <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="nav-links"><span></span><span></span><span></span></button>
+  </nav></header>
 
   <main id="main">
-    <section class="hero shell">
-      <div class="hero-copy">
-        <a class="eyebrow" href="https://cloud.getssher.com/login" aria-label="Open ssher Cloud">
-          <span class="pulse" aria-hidden="true"></span>
-          ssher Cloud is live
-        </a>
-        <h1>Your servers.<br><span>Right where you left them.</span></h1>
-        <p class="hero-lede">
-          Use the open-source CLI at your desk. Open a real SSH terminal in your browser
-          when you are away. Your teams, encrypted servers, and running sessions stay in reach.
-        </p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="https://cloud.getssher.com/login">Open ssher Cloud <span aria-hidden="true">→</span></a>
-          <a class="button button-secondary" href="#install">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .7A11.5 11.5 0 0 0 8.36 23.1c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.16 1.18A10.96 10.96 0 0 1 12 6.12c.98 0 1.95.13 2.87.39 2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.82 1.19 3.08 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.15v3.26c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
-            Install the CLI
-          </a>
-        </div>
-        <div class="proof-row" aria-label="Project highlights">
-          <span>Browser SSH</span>
-          <span>Persistent sessions</span>
-          <span>Team workspaces</span>
-          <span>Zero-knowledge sync</span>
-        </div>
-      </div>
+    <section class="hero"><div class="shell hero-grid">
+      <div class="hero-copy"><a class="eyebrow" href="https://cloud.getssher.com"><span>⌁</span> Open source CLI + ssher Cloud</a><h1>Every server.<br><em>One command away.</em></h1><p>Keep SSH fast and encrypted on your own computer. Add Cloud when your team needs shared access, browser terminals, and sessions that follow you to another screen.</p><div class="hero-actions"><a class="button button-lime button-large" href="#install">Install ssher <span>→</span></a><a class="text-button" href="/docs/getting-started/">Read the quickstart <span>↗</span></a></div><p class="hero-trust"><span>◇</span> MIT licensed · Local AES-256-GCM vault · No credential lock-in</p></div>
+      <div class="cli-stage" aria-label="ssher CLI preview"><div class="cli-glow"></div><div class="cli-window"><div class="cli-titlebar"><div><i></i><i></i><i></i></div><span>ssher — infrastructure</span><small>⌘ K</small></div><div class="cli-body"><p class="cli-muted"># encrypted vault unlocked · 6 servers</p><p><b>$</b> ssher list</p><div class="cli-table"><div><span></span><span>NAME</span><span>HOST</span><span>GROUP</span></div><div><i>●</i><b>production-api</b><span>api.example.com</span><em>platform</em></div><div><i>●</i><b>database</b><span>db.example.com</span><em>infra</em></div><div><i>●</i><b>staging</b><span>staging.example.com</span><em>everyone</em></div></div><p class="cli-command"><b>$</b> ssher production-api<span class="cursor"></span></p><p class="cli-success">✓ connected to ubuntu@api.example.com in 218ms</p><p><mark>ubuntu@production-api</mark>:~$ <span class="cursor steady"></span></p></div><div class="cli-footer"><span>vault: locked at rest</span><span>direct SSH · 34ms</span></div></div><div class="cloud-float"><span>☁</span><p><b>Continue in Cloud</b><small>Browser terminal ready anywhere</small></p><i>→</i></div></div>
+    </div></section>
 
-      <div class="terminal-wrap" aria-label="ssher terminal demonstration">
-        <div class="terminal-glow" aria-hidden="true"></div>
-        <div class="terminal">
-          <div class="terminal-bar">
-            <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span>production-api — ssher Cloud</span>
-            <span class="terminal-status">● connected</span>
-          </div>
-          <div class="terminal-body">
-            <p class="muted">workspace / acme-infrastructure</p>
-            <div class="server-table">
-              <div class="table-head"><span>SERVER</span><span>ACCESS</span><span>STATUS</span></div>
-              <div><span><b>production-api</b></span><span>Platform</span><span class="online">● live</span></div>
-              <div><span><b>staging</b></span><span>Everyone</span><span class="online">● live</span></div>
-              <div><span><b>database</b></span><span>Infra</span><span class="online">● live</span></div>
-            </div>
-            <p class="command-line"><span class="remote">deploy@prod:~$</span> <span id="demo-command">sudo systemctl restart api</span><span class="cursor" aria-hidden="true"></span></p>
-            <p class="muted">↳ restarting api.service…</p>
-            <p><span class="success">✓</span> api.service is active (running)</p>
-            <p><span class="remote">deploy@prod:~$</span> <span class="cursor cursor-still" aria-hidden="true"></span></p>
-          </div>
-          <div class="terminal-foot">
-            <span>team access: Platform</span>
-            <span>session: resumable</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <section class="platform-strip"><div class="shell"><span>Built for your terminal</span><b>Windows</b><i></i><b>macOS</b><i></i><b>Linux</b><i></i><b>Intel &amp; ARM</b></div></section>
 
-    <section class="ticker" aria-label="Core capabilities">
-      <div>
-        <span>BROWSER SSH</span><i>✦</i>
-        <span>RESUMABLE TERMINALS</span><i>✦</i>
-        <span>TEAM WORKSPACES</span><i>✦</i>
-        <span>END-TO-END ENCRYPTED SYNC</span><i>✦</i>
-        <span>NATIVE CLI</span><i>✦</i>
-        <span>OPEN SOURCE</span>
-      </div>
-    </section>
+    <section class="section product-section" id="product"><div class="shell"><div class="section-heading split"><div><span class="kicker">Local-first infrastructure access</span><h2>SSH should remember<br>the complicated parts.</h2></div><p>Names replace connection strings. An encrypted vault replaces scattered secrets. Native workflows keep the speed of your terminal.</p></div><div class="feature-grid">
+      <article class="feature feature-dark"><div class="feature-top"><span>&gt;_</span><small>FAST CONNECTIONS</small></div><h3>Connect by name,<br>not by memory.</h3><p>Use a saved name, index, alias, or fuzzy match. Favorites, groups, tags, jump hosts, and profiles make growing fleets easy to navigate.</p><code>$ ssher prod</code><a href="/docs/commands/">Explore commands →</a></article>
+      <article class="feature"><div class="feature-top"><span>⌘</span><small>FLEET OPERATIONS</small></div><h3>One command.<br>Every server.</h3><p>Execute across a group or your full fleet with bounded native concurrency, readable output, and no extra orchestration layer.</p><div class="fleet"><i>&gt;_</i><span>web</span><span>api</span><span>db</span></div><a href="/docs/commands/#batch">Run batch commands →</a></article>
+      <article class="feature"><div class="feature-top"><span>⇄</span><small>FILE TRANSFER</small></div><h3>Move files without<br>leaving the tool.</h3><p>Upload and download with SFTP through the same saved connection. Use rsync when key-based access is available.</p><div class="progress"><p><span>release.tar.gz</span><b>100%</b></p><i><b></b></i><small>42.8 MB · complete</small></div><a href="/docs/commands/#transfer">Transfer guide →</a></article>
+      <article class="feature"><div class="feature-top"><span>◈</span><small>PORTABLE CONFIG</small></div><h3>Backup, export,<br>and migrate safely.</h3><p>Create encrypted backups, export selected configuration, and bring legacy ssher data forward without hand-editing files.</p><code>$ ssher backup</code><a href="/docs/configuration/">Configuration guide →</a></article>
+    </div></div></section>
 
-    <section class="section cloud-section" id="cloud">
-      <div class="shell">
-        <div class="cloud-intro">
-          <div>
-            <p class="kicker">Introducing ssher Cloud</p>
-            <h2>The terminal finally<br>follows you.</h2>
-          </div>
-          <div class="cloud-intro-copy">
-            <p>Connect to workspace servers in a full browser terminal, detach without killing the process, and resume the same remote shell later—from another browser or device.</p>
-            <a class="text-link" href="https://cloud.getssher.com/login">Launch the cloud workspace <span>→</span></a>
-          </div>
-        </div>
+    <section class="section cloud-bridge" id="cloud"><div class="shell cloud-grid"><div class="cloud-product-preview"><div class="browser-bar"><i></i><i></i><i></i><span>cloud.getssher.com</span></div><div class="browser-app"><aside><b>&gt;_ ssher <em>cloud</em></b><small>WORKSPACE</small><strong><i>JW</i> Johnniewhite</strong><p>⌘ Command center</p><p>▤ Servers</p><p>♙ People</p><p class="active">&gt;_ Terminals <b>2</b></p><footer>◇ Zero-knowledge Cloud</footer></aside><div class="browser-terminal"><header><span>● <b>production-api</b></span><small>LIVE</small></header><pre>Last login: Fri Aug 21 13:42:04<br><em>ubuntu@production-api</em>:~$ uptime<br> up 42 days, 2 users, load average: 0.04<br><em>ubuntu@production-api</em>:~$ docker ps<br>CONTAINER ID  IMAGE           STATUS<br>7b1091e2ad39  ssher/api      Up 19 hours<br><em>ubuntu@production-api</em>:~$ <i></i></pre><footer>Managed browser session <span>Encrypted transport</span></footer></div></div></div><div class="cloud-copy"><span class="kicker dark">When local becomes everywhere</span><h2>The same infrastructure.<br>A shared command center.</h2><p>ssher Cloud adds passwordless accounts, team-scoped server access, and real browser SSH. Detach from a running shell, close your tab, then resume through another enrolled device.</p><ul><li><span>✓</span> Persistent browser terminals with tmux resume</li><li><span>✓</span> Teams, roles, invitations, and server scopes</li><li><span>✓</span> Encrypted server records and portable device access</li><li><span>✓</span> Windows, macOS, Linux, and modern browsers</li></ul><div><a class="button button-lime" href="https://cloud.getssher.com">Explore ssher Cloud <span>→</span></a><a href="https://cloud.getssher.com/docs">Cloud docs</a></div></div></div></section>
 
-        <div class="cloud-film">
-          <video controls playsinline preload="metadata" poster="/ssher-cloud-poster.jpg" aria-label="ssher Cloud announcement film">
-            <source src="/ssher-cloud-launch.mp4?v=20260820-cinematic" type="video/mp4">
-            Your browser does not support embedded video. <a href="/ssher-cloud-launch.mp4?v=20260820-cinematic">Download the announcement film.</a>
-          </video>
-          <div class="film-caption">
-            <div><span class="pulse" aria-hidden="true"></span><b>Launch film</b></div>
-            <span>00:30 · original score + sound design</span>
-          </div>
-        </div>
+    <section class="section security-section" id="security"><div class="shell security-grid"><div class="security-copy"><span class="kicker">Security, deliberately layered</span><h2>Your credentials<br>stay yours.</h2><p>Local vaults use Argon2id key derivation and AES-256-GCM authenticated encryption. Cloud records are encrypted on your device; credentials reach the managed gateway over TLS only while an SSH connection is being established.</p><div class="security-points"><p><span>01</span><b>Local vault</b><small>Encrypted at rest with owner-only file permissions.</small></p><p><span>02</span><b>Verified hosts</b><small>SSH host keys are checked before trust is established.</small></p><p><span>03</span><b>No secret logging</b><small>Cloud credentials are not written to the service database or logs.</small></p></div><a href="/docs/security/">Read the security model →</a></div><div class="vault-orbit"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="vault-core"><span>◇</span><b>VAULT</b><small>AES-256-GCM</small></div><i class="orbit-tag tag-one">Argon2id</i><i class="orbit-tag tag-two">0600</i><i class="orbit-tag tag-three">Host keys</i></div></div></section>
 
-        <div class="cloud-feature-grid">
-          <article>
-            <span class="cloud-feature-number">01</span>
-            <h3>Real browser SSH</h3>
-            <p>Connect to a saved server from your account with passwords or private keys, inside a responsive terminal.</p>
-          </article>
-          <article>
-            <span class="cloud-feature-number">02</span>
-            <h3>Leave. Come back.</h3>
-            <p>Detach from a live shell without ending it. Remote tmux keeps the terminal ready for your return.</p>
-          </article>
-          <article>
-            <span class="cloud-feature-number">03</span>
-            <h3>Access by team</h3>
-            <p>Invite people, organize teams, and choose exactly which group can see and use each shared server.</p>
-          </article>
-          <article>
-            <span class="cloud-feature-number">04</span>
-            <h3>Encrypted before sync</h3>
-            <p>Workspace server records are encrypted on your device. The cloud stores ciphertext and access metadata.</p>
-          </article>
-        </div>
-      </div>
-    </section>
+    <section class="section install-section" id="install"><div class="shell install-card"><div class="install-copy"><span class="kicker dark">Install in one command</span><h2>Meet your new<br>SSH command center.</h2><p>Choose PowerShell, Homebrew, or Go. Release archives are checksum-verified and built for Intel and ARM.</p><a href="/docs/getting-started/">Installation guide →</a></div><div class="install-terminal"><div class="install-tabs" role="tablist" aria-label="Installation method"><button class="active" role="tab" aria-selected="true" data-command="irm https://getssher.com/install.ps1 | iex">Windows</button><button role="tab" aria-selected="false" data-command="brew tap johnniewhite/ssher && brew install ssher">Homebrew</button><button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button></div><div class="install-command"><span>$</span><code id="install-command">irm https://getssher.com/install.ps1 | iex</code><button class="copy-button" type="button" aria-label="Copy installation command">Copy</button></div><div class="install-result"><span>✓</span><p><b>ssher installed successfully</b><small>Run <code>ssher add</code> to save your first server.</small></p></div></div></div></section>
 
-    <section class="section shell" id="features">
-      <div class="section-heading">
-        <p class="kicker">Local when you want it. Cloud when you need it.</p>
-        <h2>One server directory.<br>Two ways to work.</h2>
-        <p>Keep the speed and control of a native CLI, then continue from the browser without rebuilding your workflow.</p>
-      </div>
-      <div class="feature-grid">
-        <article class="feature-card feature-card-large">
-          <div class="feature-icon">&gt;_</div>
-          <p class="feature-label">Connect naturally</p>
-          <h3>Remember names,<br>not connection strings.</h3>
-          <p>Connect by name, index, alias, or fuzzy match. Favorites, groups, and profiles keep growing fleets navigable.</p>
-          <div class="mini-terminal">
-            <span class="prompt">$</span> ssher prod
-            <span class="mini-result">✓ connected in 218ms</span>
-          </div>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon">⌘</div>
-          <p class="feature-label">Parallel execution</p>
-          <h3>One command.<br>Every server.</h3>
-          <p>Fan commands across all servers or a selected group with bounded, native Go concurrency.</p>
-          <div class="fleet-visual" aria-hidden="true">
-            <span class="fleet-source">&gt;_</span>
-            <i></i><i></i><i></i>
-            <span>web</span><span>api</span><span>db</span>
-          </div>
-        </article>
-        <article class="feature-card">
-          <div class="feature-icon">⇄</div>
-          <p class="feature-label">Native transfer</p>
-          <h3>SFTP without<br>leaving the tool.</h3>
-          <p>Upload and download through the same saved connection. Sync through rsync when key authentication is available.</p>
-          <div class="progress-demo">
-            <div><span>build.tar.gz</span><b>100%</b></div>
-            <i><b></b></i>
-            <small>42.8 MB · uploaded</small>
-          </div>
-        </article>
-        <article class="feature-card feature-card-wide" id="security">
-          <div class="security-copy">
-            <div class="feature-icon">◇</div>
-            <p class="feature-label">Encrypted by design</p>
-            <h3>Your credentials stay yours.</h3>
-            <p>
-              Local vaults use AES-256-GCM and Argon2id. Cloud records are encrypted on your device,
-              and browser credentials are sent over TLS only for connection setup—not written to the service database or logs.
-            </p>
-            <a class="text-link" href="https://github.com/Johnniewhite/ssher#security-model">Read the security model <span>→</span></a>
-          </div>
-          <div class="vault-visual" aria-label="Vault security layers">
-            <div class="vault-ring vault-ring-outer"></div>
-            <div class="vault-ring vault-ring-middle"></div>
-            <div class="vault-core">
-              <svg aria-hidden="true" viewBox="0 0 48 48"><path d="M24 4 8 10v11c0 10.3 6.8 19.4 16 22.2C33.2 40.4 40 31.3 40 21V10L24 4Zm0 7.2 9 3.4V21c0 6.7-3.8 12.8-9 15.3-5.2-2.5-9-8.6-9-15.3v-6.4l9-3.4Zm0 5.3a4.5 4.5 0 0 0-2.2 8.4v5.6h4.4v-5.6a4.5 4.5 0 0 0-2.2-8.4Z"/></svg>
-              <span>VAULT</span>
-            </div>
-            <span class="orbit-label orbit-one">Argon2id</span>
-            <span class="orbit-label orbit-two">AES-256</span>
-            <span class="orbit-label orbit-three">0600</span>
-          </div>
-        </article>
-      </div>
-    </section>
+    <section class="section docs-cta"><div class="shell docs-card"><div><span class="kicker">Documentation</span><h2>Go from install<br>to infrastructure.</h2><p>Guides for vault setup, connections, transfers, teams, Cloud sync, security, and every command in the CLI.</p><a class="button button-primary" href="/docs/">Browse the docs <span>→</span></a></div><ol><li><span>01</span><a href="/docs/getting-started/"><b>Getting started</b><small>Install, create a vault, and add a server.</small></a></li><li><span>02</span><a href="/docs/commands/"><b>Command reference</b><small>Connections, batch work, files, and more.</small></a></li><li><span>03</span><a href="/docs/cloud/"><b>CLI + Cloud</b><small>Link, push, pull, and sync securely.</small></a></li><li><span>04</span><a href="/docs/security/"><b>Security</b><small>Understand encryption and telemetry.</small></a></li></ol></div></section>
 
-    <section class="section workflow-section">
-      <div class="shell">
-        <div class="section-heading compact">
-          <p class="kicker">From zero to connected</p>
-          <h2>Three commands. That's it.</h2>
-        </div>
-        <ol class="steps">
-          <li>
-            <span class="step-number">01</span>
-            <div><code>ssher add</code><p>Save a server through the guided terminal form.</p></div>
-          </li>
-          <li>
-            <span class="step-number">02</span>
-            <div><code>ssher list</code><p>See every server, alias, group, and status.</p></div>
-          </li>
-          <li>
-            <span class="step-number">03</span>
-            <div><code>ssher production</code><p>Connect directly—no flags or config archaeology.</p></div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="section shell install-section" id="install">
-      <div class="install-panel">
-        <div class="install-copy">
-          <p class="kicker">Install in seconds</p>
-          <h2>One binary.<br>Zero runtime.</h2>
-          <p>Choose PowerShell, Homebrew, or install directly from source. ssher supports Windows, macOS, and Linux on Intel and ARM.</p>
-          <a class="text-link" href="https://github.com/Johnniewhite/ssher/releases/latest">Browse every release <span>→</span></a>
-        </div>
-        <div class="install-terminal">
-          <div class="install-tabs" role="tablist" aria-label="Installation method">
-            <button class="active" role="tab" aria-selected="true" data-command="irm https://getssher.com/install.ps1 | iex">Windows</button>
-            <button role="tab" aria-selected="false" data-command="brew tap johnniewhite/ssher &amp;&amp; brew install ssher">Homebrew</button>
-            <button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button>
-          </div>
-          <div class="copy-row">
-            <code id="install-command">irm https://getssher.com/install.ps1 | iex</code>
-            <button class="copy-button" type="button" data-copy-target="install-command" aria-label="Copy installation command">Copy</button>
-          </div>
-          <div class="install-result">
-            <span class="success">✓</span>
-            <span>ssher installed successfully</span>
-            <small>Run <code>ssher</code> to begin</small>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section shell open-source-section">
-      <div class="open-source-panel">
-        <div>
-          <p class="kicker">Yours to inspect. Yours to improve.</p>
-          <h2>Open source from the first commit.</h2>
-          <p>Read the code, audit the cryptography, open an issue, or send a pull request. ssher is MIT licensed and built in public.</p>
-        </div>
-        <div class="repo-card">
-          <div class="repo-head">
-            <span class="brand-mark">&gt;_</span>
-            <div><b>Johnniewhite/ssher</b><small>Public repository</small></div>
-          </div>
-          <p>Ultimate SSH configuration manager written in Go.</p>
-          <div class="repo-meta"><span><i class="go-dot"></i> Go</span><span>MIT License</span></div>
-          <a class="button button-primary button-block" href="https://github.com/Johnniewhite/ssher">Explore on GitHub</a>
-        </div>
-      </div>
-    </section>
+    <section class="section final-cta"><div class="shell"><div><span class="kicker dark">Your next connection</span><h2>Fast in your terminal.<br>Ready everywhere.</h2><p>Start with the open-source CLI. Bring in Cloud when your infrastructure becomes a team sport.</p><div><a class="button button-lime" href="#install">Install ssher <span>→</span></a><a class="button button-ghost" href="https://cloud.getssher.com">Open Cloud</a></div></div></div></section>
   </main>
 
-  <footer>
-    <div class="shell footer-grid">
-      <a class="brand" href="/"><span class="brand-mark">&gt;_</span><span>ssher</span></a>
-      <p>Your servers, right where you left them.</p>
-      <nav aria-label="Footer navigation">
-        <a href="https://github.com/Johnniewhite/ssher">GitHub</a>
-        <a href="https://cloud.getssher.com/login">Cloud</a>
-        <a href="https://github.com/Johnniewhite/ssher/releases">Releases</a>
-        <a href="https://github.com/Johnniewhite/ssher/blob/main/SECURITY.md">Security</a>
-        <a href="https://github.com/Johnniewhite/ssher/blob/main/CONTRIBUTING.md">Contribute</a>
-      </nav>
-    </div>
-    <div class="shell footer-bottom">
-      <span>© <span id="year">2026</span> ssher contributors</span>
-      <span>Built with Go · secured with care</span>
-    </div>
-  </footer>
+  <footer class="site-footer"><div class="shell footer-grid"><div><a class="brand" href="/"><span class="brand-mark">&gt;_</span><span class="brand-word">ssher</span></a><p>Secure server access for your terminal, your team, and every screen.</p></div><div><b>Product</b><a href="#product">CLI</a><a href="https://cloud.getssher.com">Cloud</a><a href="#security">Security</a></div><div><b>Learn</b><a href="/docs/">Docs</a><a href="/docs/getting-started/">Quickstart</a><a href="/docs/commands/">Commands</a></div><div><b>Project</b><a href="https://github.com/Johnniewhite/ssher">GitHub</a><a href="https://github.com/Johnniewhite/ssher/releases">Releases</a><a href="https://github.com/Johnniewhite/ssher/blob/main/SECURITY.md">Report security issue</a></div></div><div class="shell footer-bottom"><span>© <span id="year"></span> ssher · MIT licensed</span><span>Open source locally. Available everywhere.</span></div></footer>
   <script src="/main.js" defer></script>
 </body>
 </html>
