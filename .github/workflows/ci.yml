@@ -33,3 +33,24 @@ jobs:
 
       - name: Build
         run: go build ./...
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Vet Windows code
+        run: go vet ./...
+
+      - name: Test on Windows
+        run: go test ./...
+
+      - name: Build Windows binary
+        run: go build -o ssher.exe .

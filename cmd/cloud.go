@@ -48,6 +48,7 @@ var cloudLoginCmd = &cobra.Command{
 		verificationURL := deviceCode.VerificationURI + "?code=" + strings.ReplaceAll(deviceCode.UserCode, "-", "")
 		fmt.Println(ui.Title.Render("Connect SSHer Cloud"))
 		fmt.Printf("Open %s\n\n", verificationURL)
+		_ = openURL(verificationURL)
 		fmt.Printf("Enter code: %s\n", deviceCode.UserCode)
 		fmt.Println(ui.Muted.Render("Waiting for approval…"))
 		expires, err := time.Parse(time.RFC3339, deviceCode.ExpiresAt)
@@ -428,7 +429,7 @@ func saveManagedPrivateKey(serverID string, contents []byte) (string, error) {
 	if err := tmp.Close(); err != nil {
 		return "", err
 	}
-	if err := os.Rename(tmpName, path); err != nil {
+	if err := paths.ReplaceFile(tmpName, path); err != nil {
 		return "", err
 	}
 	return path, nil

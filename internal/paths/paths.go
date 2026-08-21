@@ -6,10 +6,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 )
 
 const (
@@ -71,7 +68,9 @@ func joinConfig(name string) (string, error) {
 func HostFingerprint() ([]byte, error) {
 	raw, err := readMachineID()
 	if err != nil {
-		// Fallback so non-Linux/non-macOS boxes still work, just weaker.
+		// Fallback for unusual platforms or locked-down hosts. It is weaker
+		// than the platform machine ID, but still keeps a copied session file
+		// from being directly reusable on a differently named machine.
 		host, _ := os.Hostname()
 		raw = host + ":" + fmt.Sprint(os.Getuid())
 	}
@@ -79,39 +78,7 @@ func HostFingerprint() ([]byte, error) {
 	return sum[:], nil
 }
 
-func readMachineID() (string, error) {
-	switch runtime.GOOS {
-	case "linux":
-		for _, p := range []string{"/etc/machine-id", "/var/lib/dbus/machine-id"} {
-			b, err := os.ReadFile(p)
-			if err == nil {
-				return strings.TrimSpace(string(b)), nil
-			}
-		}
-		return "", fmt.Errorf("no machine-id file")
-	case "darwin":
-		out, err := exec.Command("/usr/sbin/ioreg", "-rd1", "-c", "IOPlatformExpertDevice").Output()
-		if err != nil {
-			return "", err
-		}
-		const marker = "IOPlatformUUID"
-		idx := strings.Index(string(out), marker)
-		if idx < 0 {
-			return "", fmt.Errorf("IOPlatformUUID not found")
-		}
-		// Format: ... "IOPlatformUUID" = "ABCD-1234-..."
-		seg := string(out)[idx+len(marker):]
-		q1 := strings.Index(seg, `"`)
-		if q1 < 0 {
-			return "", fmt.Errorf("malformed ioreg output")
-		}
-		seg = seg[q1+1:]
-		q2 := strings.Index(seg, `"`)
-		if q2 < 0 {
-			return "", fmt.Errorf("malformed ioreg output")
-		}
-		return seg[:q2], nil
-	default:
-		return "", fmt.Errorf("unsupported os: %s", runtime.GOOS)
-	}
-}
+// ReplaceFile atomically moves source over target. os.Rename has replace
+// semantics on Unix but not consistently on Windows, so the platform-specific
+// implementation uses MoveFileEx there.
+func ReplaceFile(source, target string) error { return replaceFile(source, target) }

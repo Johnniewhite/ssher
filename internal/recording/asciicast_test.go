@@ -6,7 +6,9 @@ import (
 )
 
 func TestNewWriterDoesNotCollide(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	first, firstPath, err := NewWriter("production", 80, 24)
 	if err != nil {
 		t.Fatalf("first writer: %v", err)

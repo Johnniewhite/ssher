@@ -116,7 +116,7 @@ func atomicWrite(blob []byte) error {
 		cleanup()
 		return fmt.Errorf("close temp: %w", err)
 	}
-	if err := os.Rename(tmpPath, p); err != nil {
+	if err := paths.ReplaceFile(tmpPath, p); err != nil {
 		cleanup()
 		return fmt.Errorf("rename temp: %w", err)
 	}

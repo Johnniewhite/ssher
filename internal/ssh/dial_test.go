@@ -16,6 +16,7 @@ import (
 func TestAuthMethodsFindsDefaultEd25519KeyWithoutAgent(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	t.Setenv("SSH_AUTH_SOCK", "")
 	if err := os.MkdirAll(filepath.Join(home, ".ssh"), 0o700); err != nil {
 		t.Fatalf("mkdir: %v", err)

@@ -4,6 +4,25 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-21
+
+### Added
+
+- Add native Windows x64 and ARM64 builds packaged as verified ZIP archives.
+- Add Windows ConPTY support for interactive `ssher wrap` commands, PowerShell
+  clipboard integration, OpenSSH agent named-pipe authentication, automatic
+  Cloud login browser launch, and PowerShell completion.
+- Add a checksum-verifying, per-user PowerShell installer and Windows install
+  option on getssher.com.
+- Add a Windows CI job that vets, tests, and builds the application on a real
+  Windows runner.
+
+### Security
+
+- Bind cached vault sessions to the Windows MachineGuid.
+- Use replace-existing atomic file moves for vault, session, Cloud config, and
+  managed private-key updates on Windows.
+
 ## [0.2.0] - 2026-08-20
 
 ### Added
@@ -57,7 +76,8 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 - Initial Go rewrite with encrypted vaults, native SSH/SFTP, fleet execution, recordings, import/export, and release automation.
 
-[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Johnniewhite/ssher/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Johnniewhite/ssher/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/Johnniewhite/ssher/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Johnniewhite/ssher/compare/v0.1.0...v0.1.1

@@ -110,7 +110,9 @@ func TestSavedRefusesToGuessMissingKDFParameters(t *testing.T) {
 }
 
 func TestRekeyPreservesCompleteVault(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	oldPassword := []byte("old test password")
 	newPassword := []byte("new test password")
 	saved, err := Initialise(&Vault{
@@ -144,7 +146,9 @@ func TestRekeyPreservesCompleteVault(t *testing.T) {
 
 func configureTestVault(t *testing.T, password []byte, fileParams, minParams, defaultParams vault.Argon2idParams) {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	oldMin, oldDefault := vault.MinParams, vault.DefaultParams
 	vault.MinParams, vault.DefaultParams = minParams, defaultParams
 	t.Cleanup(func() {

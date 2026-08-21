@@ -92,7 +92,7 @@ func SaveConfig(cfg *Config) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(tmpName, path)
+	return paths.ReplaceFile(tmpName, path)
 }
 
 func RemoveConfig() error {

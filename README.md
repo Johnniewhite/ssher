@@ -12,7 +12,7 @@
   <a href="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Johnniewhite/ssher/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://goreportcard.com/report/github.com/johnniewhite/ssher"><img alt="Go Report" src="https://goreportcard.com/badge/github.com/johnniewhite/ssher"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-  <img alt="Platforms" src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux-lightgrey">
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey">
 </p>
 
 ---
@@ -49,11 +49,25 @@ brew install ssher
 
 Upgrade with `brew update && brew upgrade ssher`. Also works on Linux via [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux).
 
+### Windows (PowerShell)
+
+Run this in PowerShell. The installer selects x64 or ARM64, verifies the
+release checksum, installs to your user profile, and adds `ssher` to your user
+`PATH` (no administrator access required):
+
+```powershell
+irm https://getssher.com/install.ps1 | iex
+```
+
+Open a new PowerShell window, then run `ssher`. Windows 10 version 1809,
+Windows 11, and Windows Server 2019 or later are supported.
+
 ### Pre-built binary
 
 ```bash
 # macOS arm64 shown; swap the asset name for your OS/arch
-# (Darwin_arm64, Darwin_amd64, Linux_amd64, Linux_arm64)
+# (Darwin_arm64, Darwin_amd64, Linux_amd64, Linux_arm64,
+#  Windows_amd64.zip, Windows_arm64.zip)
 curl -LO https://github.com/johnniewhite/ssher/releases/latest/download/ssher_Darwin_arm64.tar.gz
 tar -xzf ssher_Darwin_arm64.tar.gz && sudo mv ssher /usr/local/bin/
 ```
@@ -77,6 +91,9 @@ Enable shell completion:
 eval "$(ssher completion zsh)"
 # bash
 eval "$(ssher completion bash)"
+
+# PowerShell
+ssher completion powershell | Out-String | Invoke-Expression
 ```
 
 ## Quick tour
@@ -153,6 +170,7 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 | `~/.ssh/config` directives (`ProxyCommand`, `ControlMaster`, `Match`, etc.) aren't honoured | Native dial, no `ssh(1)` involvement | `ssher export-config` writes an `~/.ssh/config` snippet for tools that *do* read it |
 | `rsync` requires SSH key auth | We shell out to `rsync(1)` and don't currently inject passwords into its child SSH | Use `ssher upload` / `ssher download` (SFTP) for password-auth servers |
 | X11 and arbitrary OpenSSH options are export-only | Native connections do not implement OpenSSH's X11/config machinery | Run `ssher export-config` and connect with OpenSSH when those options are required |
+| `rsync` is not included with Windows | ssher shells out to an existing `rsync` for directory synchronization | Use native `ssher upload` / `ssher download`, or install rsync through WSL/MSYS2 |
 
 ## Security model
 
@@ -187,6 +205,10 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 | `~/.ssher/cloud.json` | `0600` | revocable Cloud session and linked workspace |
 | `~/.ssher/cloud-device-key.pem` | `0600` | P-256 device private key |
 | `~/.ssher/cloud-keys/*` | `0600` | private keys decrypted from managed Cloud records |
+
+On Windows, the same files live under `%USERPROFILE%\.ssher`. ACLs on the
+user profile provide the platform equivalent of Unix `0600` permissions, and
+vault/session updates use atomic replace semantics.
 
 ## Roadmap
 

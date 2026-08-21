@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"golang.org/x/crypto/hkdf"
@@ -191,7 +192,7 @@ func wrappingKey() ([]byte, error) {
 }
 
 func writeFileAtomic(path string, data []byte) error {
-	tmp, err := os.CreateTemp(pathDir(path), "session.*.tmp")
+	tmp, err := os.CreateTemp(filepath.Dir(path), "session.*.tmp")
 	if err != nil {
 		return fmt.Errorf("create temp: %w", err)
 	}
@@ -215,14 +216,5 @@ func writeFileAtomic(path string, data []byte) error {
 		_ = os.Remove(tmpPath)
 		return err
 	}
-	return os.Rename(tmpPath, path)
-}
-
-func pathDir(p string) string {
-	for i := len(p) - 1; i >= 0; i-- {
-		if p[i] == '/' {
-			return p[:i]
-		}
-	}
-	return "."
+	return paths.ReplaceFile(tmpPath, path)
 }

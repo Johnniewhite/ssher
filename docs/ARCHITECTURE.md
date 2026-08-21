@@ -11,10 +11,10 @@ ssher is a single Go binary. `main.go` delegates to the Cobra command tree in `c
 | `internal/vault` | AES-GCM format, Argon2id KDF, atomic files, and cached sessions |
 | `internal/ssh` | Authentication, host-key verification, jump host, sessions, keepalives, and forwarding |
 | `internal/transfer` | Native SFTP and external `rsync` integration |
-| `internal/pty` | Password-prompt handling used only by `ssher wrap` |
+| `internal/pty` | Password-prompt handling used only by `ssher wrap`, backed by Unix PTYs or Windows ConPTY |
 | `internal/recording` | Asciicast v2 writing and replay |
 | `internal/ui` | Vault authentication, forms, tables, and styles |
-| `internal/paths` | Canonical paths, permissions, and host fingerprint |
+| `internal/paths` | Canonical paths, platform-safe atomic replacement, permissions, and host fingerprint |
 
 ## Vault lifecycle
 
@@ -26,7 +26,7 @@ password unlock ──Argon2id──> key ──AES-GCM──> JSON vault
 later command ──.session──> cached key ──AES-GCM──> JSON vault
 ```
 
-The vault header stores the KDF parameters, salt, and nonce. A cached key must always be saved with the parameters that produced it. Weak parameters are upgraded only during password-based unlock, when a new matching key can be derived. Vault and session writes use a temporary file, `fsync`, and atomic rename.
+The vault header stores the KDF parameters, salt, and nonce. A cached key must always be saved with the parameters that produced it. Weak parameters are upgraded only during password-based unlock, when a new matching key can be derived. Vault and session writes use a temporary file, `fsync`, and atomic replacement (`rename` on Unix and `MoveFileEx` on Windows).
 
 `Vault.Aliases` is canonical. Legacy per-server aliases are migrated on load. The JSON vault format remains at version 1.
 
@@ -46,6 +46,7 @@ The native stack intentionally does not interpret arbitrary `~/.ssh/config` dire
 - Keep existing vaults readable.
 - Preserve KDF header/key consistency.
 - Write files under `~/.ssher` with `0600` and directories with `0700`.
+- On Windows, map that directory to `%USERPROFILE%\.ssher`, rely on user-profile ACLs, and use MachineGuid for session binding.
 - Omit passwords from plaintext exports unless explicitly requested.
 - Keep PTY prompt injection isolated to `internal/pty`.
 - Do not shell out to `ssh` for native connect, exec, or SFTP operations.

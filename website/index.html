@@ -30,7 +30,7 @@
       "@type": "SoftwareApplication",
       "name": "ssher",
       "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "macOS, Linux",
+      "operatingSystem": "Windows, macOS, Linux",
       "description": "An encrypted SSH manager for the terminal and browser, with team workspaces and persistent cloud sessions.",
       "url": "https://getssher.com",
       "downloadUrl": "https://github.com/Johnniewhite/ssher/releases/latest",
@@ -273,16 +273,17 @@
         <div class="install-copy">
           <p class="kicker">Install in seconds</p>
           <h2>One binary.<br>Zero runtime.</h2>
-          <p>Choose Homebrew, a pre-built release, or install directly from source. ssher supports macOS and Linux on Intel and ARM.</p>
+          <p>Choose PowerShell, Homebrew, or install directly from source. ssher supports Windows, macOS, and Linux on Intel and ARM.</p>
           <a class="text-link" href="https://github.com/Johnniewhite/ssher/releases/latest">Browse every release <span>→</span></a>
         </div>
         <div class="install-terminal">
           <div class="install-tabs" role="tablist" aria-label="Installation method">
-            <button class="active" role="tab" aria-selected="true" data-command="brew tap johnniewhite/ssher &amp;&amp; brew install ssher">Homebrew</button>
+            <button class="active" role="tab" aria-selected="true" data-command="irm https://getssher.com/install.ps1 | iex">Windows</button>
+            <button role="tab" aria-selected="false" data-command="brew tap johnniewhite/ssher &amp;&amp; brew install ssher">Homebrew</button>
             <button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button>
           </div>
           <div class="copy-row">
-            <code id="install-command">brew tap johnniewhite/ssher &amp;&amp; brew install ssher</code>
+            <code id="install-command">irm https://getssher.com/install.ps1 | iex</code>
             <button class="copy-button" type="button" data-copy-target="install-command" aria-label="Copy installation command">Copy</button>
           </div>
           <div class="install-result">

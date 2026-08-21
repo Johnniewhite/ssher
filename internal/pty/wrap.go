@@ -10,16 +10,16 @@ package pty
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
 	"syscall"
 
-	"github.com/creack/pty"
+	"github.com/charmbracelet/x/xpty"
 	"golang.org/x/term"
 )
 
@@ -51,32 +51,32 @@ func runWithIO(argv []string, password string, promptPatterns []string, stdin io
 	cmd := exec.Command(argv[0], argv[1:]...)
 	cmd.Env = os.Environ() // forward env verbatim
 
-	ptmx, err := pty.Start(cmd)
+	width, height := 80, 24
+	if stdinFile, ok := stdin.(*os.File); ok {
+		if w, h, sizeErr := term.GetSize(int(stdinFile.Fd())); sizeErr == nil {
+			width, height = w, h
+		}
+	}
+	ptmx, err := xpty.NewPty(width, height)
 	if err != nil {
-		return -1, fmt.Errorf("start pty: %w", err)
+		return -1, fmt.Errorf("create pty: %w", err)
 	}
 	defer ptmx.Close()
+	preparePTYCommand(cmd)
+	if err := ptmx.Start(cmd); err != nil {
+		return -1, fmt.Errorf("start pty: %w", err)
+	}
+	// xpty keeps the Unix slave handle open after Start. The parent must close
+	// its copy so reads from the master receive EOF when the child exits.
+	if unixPTY, ok := ptmx.(*xpty.UnixPty); ok {
+		_ = unixPTY.Slave().Close()
+	}
 
-	// Mirror local TTY size into the PTY, and re-mirror on SIGWINCH.
+	// Mirror local terminal resizing into the PTY. Unix uses SIGWINCH while
+	// Windows polls the console size because ConPTY has no SIGWINCH equivalent.
 	if stdinFile, ok := stdin.(*os.File); ok {
-		resizeCh := make(chan os.Signal, 1)
-		resizeDone := make(chan struct{})
-		signal.Notify(resizeCh, syscall.SIGWINCH)
-		go func() {
-			for {
-				select {
-				case <-resizeCh:
-					_ = pty.InheritSize(stdinFile, ptmx)
-				case <-resizeDone:
-					return
-				}
-			}
-		}()
-		resizeCh <- syscall.SIGWINCH
-		defer func() {
-			signal.Stop(resizeCh)
-			close(resizeDone)
-		}()
+		stopResize := watchTerminalResize(stdinFile, ptmx)
+		defer stopResize()
 
 		// Local raw mode so user keystrokes pass through cleanly.
 		fd := int(stdinFile.Fd())
@@ -96,7 +96,7 @@ func runWithIO(argv []string, password string, promptPatterns []string, stdin io
 
 	if err := watchAndInject(ptmx, password, promptPatterns, stdout); err != nil {
 		_ = cmd.Process.Kill()
-		_ = cmd.Wait()
+		_ = xpty.WaitProcess(context.Background(), cmd)
 		return -1, err
 	}
 
@@ -109,20 +109,16 @@ func runWithIO(argv []string, password string, promptPatterns []string, stdin io
 		_, _ = io.Copy(stdout, ptmx)
 	}()
 
-	werr := cmd.Wait()
+	werr := xpty.WaitProcess(context.Background(), cmd)
 	// Closing the PTY unblocks the output copier.
 	_ = ptmx.Close()
 	<-outputDone
 
+	if cmd.ProcessState != nil {
+		return cmd.ProcessState.ExitCode(), nil
+	}
 	if werr == nil {
 		return 0, nil
-	}
-	var ee *exec.ExitError
-	if errors.As(werr, &ee) {
-		if status, ok := ee.Sys().(syscall.WaitStatus); ok {
-			return status.ExitStatus(), nil
-		}
-		return 1, nil
 	}
 	return -1, werr
 }
@@ -150,7 +146,7 @@ func watchAndInject(ptmx io.ReadWriter, password string, patterns []string, stdo
 			low := strings.ToLower(seen.String())
 			for _, pat := range patterns {
 				if strings.Contains(low, strings.ToLower(pat)) {
-					if _, werr := io.WriteString(ptmx.(io.Writer), password+"\n"); werr != nil {
+					if _, werr := io.WriteString(ptmx, password+"\n"); werr != nil {
 						return fmt.Errorf("write password: %w", werr)
 					}
 					return nil

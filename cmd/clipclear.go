@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -65,7 +64,6 @@ func spawnClipboardClear(secret string, ttl time.Duration) {
 	sum := sha256.Sum256([]byte(secret))
 	cmd := exec.Command(exe, "__clipboard-clear",
 		strconv.Itoa(int(ttl.Seconds())), hex.EncodeToString(sum[:]))
-	// Setsid detaches the child from our process group so it survives our exit.
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	detachCommand(cmd)
 	_ = cmd.Start()
 }

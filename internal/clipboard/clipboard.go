@@ -1,7 +1,7 @@
 // Package clipboard writes text to the system clipboard. We shell out to
-// platform-native tools (pbcopy on macOS, xclip / wl-copy on Linux) rather
-// than pulling in a CGO clipboard library — keeps the Go binary CGO-free
-// and the dependency story simple.
+// platform-native tools (PowerShell on Windows, pbcopy on macOS, xclip /
+// wl-copy on Linux) rather than pulling in a CGO clipboard library — keeps
+// the Go binary CGO-free and the dependency story simple.
 package clipboard
 
 import (
@@ -45,6 +45,13 @@ func Paste() (string, error) {
 
 func chooseCopyCommand() (*exec.Cmd, error) {
 	switch runtime.GOOS {
+	case "windows":
+		powershell, err := windowsPowerShell()
+		if err != nil {
+			return nil, err
+		}
+		return exec.Command(powershell, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
+			`Set-Clipboard -Value ([Console]::In.ReadToEnd())`), nil
 	case "darwin":
 		return exec.Command("pbcopy"), nil
 	case "linux":
@@ -65,6 +72,13 @@ func chooseCopyCommand() (*exec.Cmd, error) {
 
 func choosePasteCommand() (*exec.Cmd, error) {
 	switch runtime.GOOS {
+	case "windows":
+		powershell, err := windowsPowerShell()
+		if err != nil {
+			return nil, err
+		}
+		return exec.Command(powershell, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
+			`$value = Get-Clipboard -Raw; if ($null -ne $value) { [Console]::Out.Write($value) }`), nil
 	case "darwin":
 		return exec.Command("pbpaste"), nil
 	case "linux":
@@ -81,4 +95,13 @@ func choosePasteCommand() (*exec.Cmd, error) {
 	default:
 		return nil, fmt.Errorf("clipboard not supported on %s", runtime.GOOS)
 	}
+}
+
+func windowsPowerShell() (string, error) {
+	for _, name := range []string{"powershell.exe", "pwsh.exe"} {
+		if path, err := exec.LookPath(name); err == nil {
+			return path, nil
+		}
+	}
+	return "", errors.New("PowerShell not found; install Windows PowerShell or PowerShell 7")
 }
