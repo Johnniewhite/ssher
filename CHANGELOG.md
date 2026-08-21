@@ -4,6 +4,19 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-08-21
+
+### Added
+
+- Add `ssher cloud authorize-devices` so an authorized CLI can grant pending
+  workspace devices encrypted access without exposing the workspace key to the
+  Cloud API.
+
+### Fixed
+
+- Restore browser access safely when a replacement device needs a fresh
+  workspace-key envelope.
+
 ## [0.3.2] - 2026-08-21
 
 ### Added
@@ -101,7 +114,8 @@ Notable changes to ssher are documented here. The project follows [Semantic Vers
 
 - Initial Go rewrite with encrypted vaults, native SSH/SFTP, fleet execution, recordings, import/export, and release automation.
 
-[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/Johnniewhite/ssher/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/Johnniewhite/ssher/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Johnniewhite/ssher/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Johnniewhite/ssher/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Johnniewhite/ssher/compare/v0.2.0...v0.3.0

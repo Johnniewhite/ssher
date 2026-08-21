@@ -1,16 +1,8 @@
 package cloud
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/ecdh"
 	"crypto/rand"
-	"crypto/sha256"
-	"fmt"
-	"io"
 	"testing"
-
-	"golang.org/x/crypto/hkdf"
 
 	"github.com/johnniewhite/ssher/internal/store"
 )
@@ -33,31 +25,14 @@ func TestDeviceKeyEnvelopeAndServerRoundTrip(t *testing.T) {
 
 	const orgID = "d82a0ab7-18e7-493f-b621-110d7da4897c"
 	const deviceID = "fba770d3-da08-4a35-af10-a3e57bc48dd9"
-	ephemeral, err := ecdh.P256().GenerateKey(rand.Reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-	secret, err := ephemeral.ECDH(deviceKey.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
-	reader := hkdf.New(sha256.New, secret, []byte(orgID), []byte("ssher-cloud-workspace-key-v1"))
-	wrappingKey := make([]byte, 32)
-	if _, err := io.ReadFull(reader, wrappingKey); err != nil {
-		t.Fatal(err)
-	}
-	block, _ := aes.NewCipher(wrappingKey)
-	gcm, _ := cipher.NewGCM(block)
 	workspaceKey := make([]byte, 32)
 	if _, err := rand.Read(workspaceKey); err != nil {
 		t.Fatal(err)
 	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		t.Fatal(err)
+	envelope, err := WrapWorkspaceKey(workspaceKey, deviceKey.PublicKey().Bytes(), orgID, deviceID)
+	if err != nil {
+		t.Fatalf("wrap: %v", err)
 	}
-	envelope := Envelope{OrganizationID: orgID, DeviceID: deviceID, EphemeralPublicKey: ephemeral.PublicKey().Bytes(), Nonce: nonce}
-	envelope.Ciphertext = gcm.Seal(nil, nonce, workspaceKey, []byte(fmt.Sprintf("ssher-cloud-envelope:%s:%s", orgID, deviceID)))
 	unwrapped, err := UnwrapWorkspaceKey(envelope, deviceKey)
 	if err != nil {
 		t.Fatalf("unwrap: %v", err)

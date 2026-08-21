@@ -148,6 +148,7 @@ ssher cloud link --organization my-team    # choose a workspace
 ssher cloud pull                            # decrypt cloud servers into this vault
 ssher cloud push                            # encrypt local changes and upload
 ssher cloud sync                            # pull, then push non-conflicting changes
+ssher cloud authorize-devices               # approve pending browser/device envelopes
 ```
 
 Private-key file contents are not uploaded by default. Use `ssher cloud push

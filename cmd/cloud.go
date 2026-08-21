@@ -163,6 +163,38 @@ var cloudPushCmd = &cobra.Command{
 	RunE: func(c *cobra.Command, _ []string) error { _, err := pushCloud(c.Context()); return err },
 }
 
+var cloudAuthorizeDevicesCmd = &cobra.Command{
+	Use:     "authorize-devices",
+	Aliases: []string{"authorize"},
+	Short:   "Grant pending workspace devices encrypted access",
+	RunE: func(c *cobra.Command, _ []string) error {
+		cfg, client, workspaceKey, err := cloudWorkspace(c.Context())
+		if err != nil {
+			return err
+		}
+		devices, err := client.OrganizationDevices(c.Context(), cfg.OrganizationID)
+		if err != nil {
+			return err
+		}
+		authorized := 0
+		for _, device := range devices {
+			if device.HasEnvelope || device.RevokedAt != nil {
+				continue
+			}
+			envelope, err := cloudapi.WrapWorkspaceKey(workspaceKey, device.PublicKey, cfg.OrganizationID, device.ID)
+			if err != nil {
+				return fmt.Errorf("authorize %s: %w", device.Name, err)
+			}
+			if err := client.PutWorkspaceEnvelope(c.Context(), cfg.OrganizationID, device.ID, envelope); err != nil {
+				return fmt.Errorf("authorize %s: %w", device.Name, err)
+			}
+			authorized++
+		}
+		fmt.Println(ui.Successf(fmt.Sprintf("authorized %d pending device(s) for %s", authorized, cfg.OrganizationName)))
+		return nil
+	},
+}
+
 var cloudSyncCmd = &cobra.Command{
 	Use: "sync", Short: "Pull remote changes, then push local changes",
 	RunE: func(c *cobra.Command, _ []string) error {
@@ -441,6 +473,6 @@ func init() {
 	cloudLinkCmd.Flags().StringVarP(&cloudOrganization, "organization", "o", "", "workspace name, slug, or ID")
 	cloudPushCmd.Flags().StringVarP(&cloudServerTarget, "server", "s", "", "push only one server")
 	cloudPushCmd.Flags().BoolVar(&cloudIncludeKeys, "include-keys", false, "include private-key contents in the encrypted payload")
-	cloudCmd.AddCommand(cloudLoginCmd, cloudLinkCmd, cloudStatusCmd, cloudPullCmd, cloudPushCmd, cloudSyncCmd, cloudLogoutCmd)
+	cloudCmd.AddCommand(cloudLoginCmd, cloudLinkCmd, cloudStatusCmd, cloudPullCmd, cloudPushCmd, cloudSyncCmd, cloudAuthorizeDevicesCmd, cloudLogoutCmd)
 	rootCmd.AddCommand(cloudCmd)
 }

@@ -102,6 +102,40 @@ func UnwrapWorkspaceKey(envelope Envelope, privateKey *ecdh.PrivateKey) ([]byte,
 	return gcm.Open(nil, envelope.Nonce, envelope.Ciphertext, aad)
 }
 
+// WrapWorkspaceKey encrypts a workspace key for one authorized device. The
+// server stores only this envelope and never receives the plaintext key.
+func WrapWorkspaceKey(workspaceKey, recipientPublicKey []byte, orgID, deviceID string) (Envelope, error) {
+	ephemeral, err := ecdh.P256().GenerateKey(rand.Reader)
+	if err != nil {
+		return Envelope{}, err
+	}
+	key, err := workspaceWrappingKey(ephemeral, recipientPublicKey, orgID)
+	if err != nil {
+		return Envelope{}, err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return Envelope{}, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return Envelope{}, err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return Envelope{}, err
+	}
+	aad := []byte(fmt.Sprintf("ssher-cloud-envelope:%s:%s", orgID, deviceID))
+	return Envelope{
+		OrganizationID:     orgID,
+		DeviceID:           deviceID,
+		Generation:         1,
+		EphemeralPublicKey: ephemeral.PublicKey().Bytes(),
+		Nonce:              nonce,
+		Ciphertext:         gcm.Seal(nil, nonce, workspaceKey, aad),
+	}, nil
+}
+
 func EncryptServer(payload ServerPayload, key []byte, orgID, serverID string, revision int64) (EncryptedServer, error) {
 	b, err := json.Marshal(payload)
 	if err != nil {

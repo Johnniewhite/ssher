@@ -88,6 +88,15 @@ type Device struct {
 	Platform  string `json:"platform"`
 	PublicKey []byte `json:"public_key"`
 }
+type OrganizationDevice struct {
+	ID          string     `json:"id"`
+	UserID      string     `json:"user_id"`
+	Name        string     `json:"name"`
+	Platform    string     `json:"platform"`
+	PublicKey   []byte     `json:"public_key"`
+	HasEnvelope bool       `json:"has_envelope"`
+	RevokedAt   *time.Time `json:"revoked_at,omitempty"`
+}
 type DeviceToken struct {
 	Status  string `json:"status"`
 	User    User   `json:"user"`
@@ -142,6 +151,20 @@ func (c *Client) WorkspaceEnvelope(ctx context.Context, orgID, deviceID string) 
 	var out Envelope
 	_, err := c.request(ctx, http.MethodGet, "/v1/organizations/"+orgID+"/workspace-key-envelopes/"+deviceID, nil, &out)
 	return out, err
+}
+func (c *Client) OrganizationDevices(ctx context.Context, orgID string) ([]OrganizationDevice, error) {
+	var out struct {
+		Devices []OrganizationDevice `json:"devices"`
+	}
+	_, err := c.request(ctx, http.MethodGet, "/v1/organizations/"+orgID+"/devices", nil, &out)
+	return out.Devices, err
+}
+func (c *Client) PutWorkspaceEnvelope(ctx context.Context, orgID, deviceID string, envelope Envelope) error {
+	_, err := c.request(ctx, http.MethodPut, "/v1/organizations/"+orgID+"/workspace-key-envelopes/"+deviceID, map[string]any{
+		"generation": envelope.Generation, "ephemeral_public_key": envelope.EphemeralPublicKey,
+		"nonce": envelope.Nonce, "ciphertext": envelope.Ciphertext,
+	}, nil)
+	return err
 }
 func (c *Client) Servers(ctx context.Context, orgID string) ([]EncryptedServer, error) {
 	var out struct {
