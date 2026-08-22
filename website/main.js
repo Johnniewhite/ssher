@@ -43,6 +43,25 @@ navLinks?.querySelectorAll("a").forEach((link) => link.addEventListener("click",
   menuButton?.setAttribute("aria-expanded", "false");
 }));
 
+const siteHeader = document.querySelector("[data-header]");
+const updateHeader = () => siteHeader?.classList.toggle("scrolled", window.scrollY > 18);
+updateHeader();
+window.addEventListener("scroll", updateHeader, { passive: true });
+
+const revealItems = document.querySelectorAll("[data-reveal]");
+if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    }
+  }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+  revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+  revealItems.forEach((item) => item.classList.add("visible"));
+}
+
 document.querySelectorAll(".code-block button").forEach((button) => {
   button.addEventListener("click", async () => {
     const code = button.parentElement?.querySelector("pre")?.textContent ?? "";
