@@ -121,13 +121,14 @@ type Envelope struct {
 	Ciphertext         []byte `json:"ciphertext"`
 }
 type EncryptedServer struct {
-	ID             string     `json:"id"`
-	OrganizationID string     `json:"organization_id"`
-	Ciphertext     []byte     `json:"ciphertext"`
-	Nonce          []byte     `json:"nonce"`
-	Revision       int64      `json:"revision"`
-	TeamIDs        []string   `json:"team_ids"`
-	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
+	ID                  string            `json:"id"`
+	OrganizationID      string            `json:"organization_id"`
+	Ciphertext          []byte            `json:"ciphertext"`
+	Nonce               []byte            `json:"nonce"`
+	Revision            int64             `json:"revision"`
+	TeamIDs             []string          `json:"team_ids"`
+	TeamAccessExpiresAt map[string]string `json:"team_access_expires_at,omitempty"`
+	DeletedAt           *time.Time        `json:"deleted_at,omitempty"`
 }
 
 func (c *Client) CreateDeviceCode(ctx context.Context, name, platform string, publicKey []byte) (DeviceCode, error) {
@@ -175,11 +176,11 @@ func (c *Client) Servers(ctx context.Context, orgID string) ([]EncryptedServer, 
 }
 func (c *Client) CreateServer(ctx context.Context, orgID string, in EncryptedServer) (EncryptedServer, error) {
 	var out EncryptedServer
-	_, err := c.request(ctx, http.MethodPost, "/v1/organizations/"+orgID+"/servers", map[string]any{"id": in.ID, "ciphertext": in.Ciphertext, "nonce": in.Nonce, "team_ids": in.TeamIDs}, &out)
+	_, err := c.request(ctx, http.MethodPost, "/v1/organizations/"+orgID+"/servers", map[string]any{"id": in.ID, "ciphertext": in.Ciphertext, "nonce": in.Nonce, "team_ids": in.TeamIDs, "team_access_expires_at": in.TeamAccessExpiresAt}, &out)
 	return out, err
 }
 func (c *Client) UpdateServer(ctx context.Context, orgID string, in EncryptedServer, expected int64) (EncryptedServer, error) {
 	var out EncryptedServer
-	_, err := c.request(ctx, http.MethodPut, "/v1/organizations/"+orgID+"/servers/"+in.ID, map[string]any{"ciphertext": in.Ciphertext, "nonce": in.Nonce, "expected_revision": expected, "team_ids": in.TeamIDs}, &out)
+	_, err := c.request(ctx, http.MethodPut, "/v1/organizations/"+orgID+"/servers/"+in.ID, map[string]any{"ciphertext": in.Ciphertext, "nonce": in.Nonce, "expected_revision": expected, "team_ids": in.TeamIDs, "team_access_expires_at": in.TeamAccessExpiresAt}, &out)
 	return out, err
 }

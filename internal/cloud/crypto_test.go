@@ -61,6 +61,7 @@ func TestServerHashIgnoresCloudSyncMetadata(t *testing.T) {
 	server.CloudID = "1"
 	server.CloudRevision = 99
 	server.CloudSyncedHash = "old"
+	server.CloudSyncedAt = "2026-08-22T00:00:00Z"
 	server.CloudTeamIDs = []string{"team"}
 	if got := ServerHash(server); got != want {
 		t.Fatalf("metadata changed hash: %s != %s", got, want)

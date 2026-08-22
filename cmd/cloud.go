@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -25,6 +26,7 @@ var (
 	cloudOrganization string
 	cloudServerTarget string
 	cloudIncludeKeys  bool
+	cloudStatusJSON   bool
 )
 
 var cloudCmd = &cobra.Command{Use: "cloud", Short: "Sync servers through end-to-end encrypted SSHer Cloud"}
@@ -132,12 +134,53 @@ var cloudLinkCmd = &cobra.Command{
 
 var cloudStatusCmd = &cobra.Command{
 	Use: "status", Short: "Show cloud account and sync status",
-	RunE: func(_ *cobra.Command, _ []string) error {
+	RunE: func(c *cobra.Command, _ []string) error {
 		cfg, err := cloudapi.LoadConfig()
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Account:   %s\nDevice:    %s\nWorkspace: %s\nAPI:       %s\n", cfg.UserEmail, cfg.DeviceID, valueOr(cfg.OrganizationName, "not linked"), cfg.APIURL)
+		status := struct {
+			Account, DeviceID, Workspace, API, Encryption string
+			LocalServers, CloudServers, PendingPush       int
+			LastSyncedAt                                  string
+		}{Account: cfg.UserEmail, DeviceID: cfg.DeviceID, Workspace: valueOr(cfg.OrganizationName, "not linked"), API: cfg.APIURL, Encryption: "awaiting workspace authorization"}
+		saved, loadErr := ui.LoadVault()
+		if loadErr != nil {
+			return loadErr
+		}
+		status.LocalServers = len(saved.Vault.Servers)
+		for _, server := range saved.Vault.Servers {
+			if server.CloudID == "" || server.CloudSyncedHash != cloudapi.ServerHash(server) {
+				status.PendingPush++
+			}
+			if server.CloudSyncedAt > status.LastSyncedAt {
+				status.LastSyncedAt = server.CloudSyncedAt
+			}
+		}
+		if cfg.OrganizationID != "" {
+			client := cloudapi.NewClient(cfg.APIURL, cfg.SessionToken)
+			if _, envelopeErr := client.WorkspaceEnvelope(c.Context(), cfg.OrganizationID, cfg.DeviceID); envelopeErr == nil {
+				status.Encryption = "authorized · device envelope available"
+			} else if apiErr := new(cloudapi.APIError); errors.As(envelopeErr, &apiErr) && apiErr.Status == 404 {
+				status.Encryption = "awaiting workspace authorization"
+			} else {
+				return envelopeErr
+			}
+			if records, recordsErr := client.Servers(c.Context(), cfg.OrganizationID); recordsErr == nil {
+				for _, record := range records {
+					if record.DeletedAt == nil {
+						status.CloudServers++
+					}
+				}
+			} else {
+				return recordsErr
+			}
+		}
+		if cloudStatusJSON {
+			return json.NewEncoder(os.Stdout).Encode(map[string]any{"account": status.Account, "device_id": status.DeviceID, "workspace": status.Workspace, "api": status.API, "encryption": status.Encryption, "local_servers": status.LocalServers, "cloud_servers": status.CloudServers, "pending_push": status.PendingPush, "last_synced_at": status.LastSyncedAt})
+		}
+		lastSync := valueOr(status.LastSyncedAt, "never")
+		fmt.Printf("Account:      %s\nDevice:       %s\nWorkspace:    %s\nAPI:          %s\nEncryption:   %s\nInventory:    %d local · %d Cloud · %d pending push\nLast synced:  %s\n", status.Account, status.DeviceID, status.Workspace, status.API, status.Encryption, status.LocalServers, status.CloudServers, status.PendingPush, lastSync)
 		return nil
 	},
 }
@@ -282,6 +325,7 @@ func pullCloud(ctx context.Context) (int, error) {
 		}
 		server := payload.Server
 		server.CloudID, server.CloudRevision, server.CloudTeamIDs = record.ID, record.Revision, record.TeamIDs
+		server.CloudTeamAccessExpiresAt = record.TeamAccessExpiresAt
 		if payload.PrivateKey != "" {
 			path, err := saveManagedPrivateKey(record.ID, []byte(payload.PrivateKey))
 			if err != nil {
@@ -290,7 +334,7 @@ func pullCloud(ctx context.Context) (int, error) {
 			server.KeyPath = path
 		}
 		server.Touch()
-		server.CloudSyncedHash = cloudapi.ServerHash(server)
+		server.CloudSyncedHash, server.CloudSyncedAt = cloudapi.ServerHash(server), time.Now().UTC().Format(time.RFC3339)
 		if index >= 0 {
 			saved.Vault.Servers[index] = server
 		} else if nameIndex := serverNameIndex(saved.Vault, server.Name); nameIndex >= 0 && saved.Vault.Servers[nameIndex].CloudID == "" {
@@ -362,6 +406,7 @@ func pushCloud(ctx context.Context) (int, error) {
 			return pushed, err
 		}
 		record.TeamIDs = server.CloudTeamIDs
+		record.TeamAccessExpiresAt = server.CloudTeamAccessExpiresAt
 		if server.CloudRevision == 0 {
 			record, err = client.CreateServer(ctx, cfg.OrganizationID, record)
 		} else {
@@ -370,7 +415,7 @@ func pushCloud(ctx context.Context) (int, error) {
 		if err != nil {
 			return pushed, fmt.Errorf("push %s: %w", server.Name, err)
 		}
-		server.CloudRevision, server.CloudSyncedHash = record.Revision, cloudapi.ServerHash(*server)
+		server.CloudRevision, server.CloudSyncedHash, server.CloudSyncedAt = record.Revision, cloudapi.ServerHash(*server), time.Now().UTC().Format(time.RFC3339)
 		if err := saved.SaveAndRefreshSession(); err != nil {
 			return pushed, err
 		}
@@ -473,6 +518,7 @@ func init() {
 	cloudLinkCmd.Flags().StringVarP(&cloudOrganization, "organization", "o", "", "workspace name, slug, or ID")
 	cloudPushCmd.Flags().StringVarP(&cloudServerTarget, "server", "s", "", "push only one server")
 	cloudPushCmd.Flags().BoolVar(&cloudIncludeKeys, "include-keys", false, "include private-key contents in the encrypted payload")
-	cloudCmd.AddCommand(cloudLoginCmd, cloudLinkCmd, cloudStatusCmd, cloudPullCmd, cloudPushCmd, cloudSyncCmd, cloudAuthorizeDevicesCmd, cloudLogoutCmd)
+	cloudStatusCmd.Flags().BoolVar(&cloudStatusJSON, "json", false, "emit machine-readable synchronization status")
+	cloudCmd.AddCommand(cloudLoginCmd, cloudLinkCmd, cloudStatusCmd, cloudPullCmd, cloudPushCmd, cloudSyncCmd, cloudImportOpenSSHCmd, cloudAuthorizeDevicesCmd, cloudLogoutCmd)
 	rootCmd.AddCommand(cloudCmd)
 }

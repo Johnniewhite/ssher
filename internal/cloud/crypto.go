@@ -182,7 +182,9 @@ func PayloadForServer(server store.Server) ServerPayload {
 	server.CloudID = ""
 	server.CloudRevision = 0
 	server.CloudSyncedHash = ""
+	server.CloudSyncedAt = ""
 	server.CloudTeamIDs = nil
+	server.CloudTeamAccessExpiresAt = nil
 	return ServerPayload{Server: server}
 }
 

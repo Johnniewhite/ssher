@@ -32,6 +32,7 @@ func runInteractive(c *cobra.Command, args []string) error {
 		fmt.Println()
 		fmt.Println(ui.Muted.Render("[number] connect    [a] add    [e] edit    [d] delete    [f] toggle favorite"))
 		fmt.Println(ui.Muted.Render("[g] groups         [s] search [t] transfer [x] exec       [p] ping all"))
+		fmt.Println(ui.Muted.Render("[i] import OpenSSH [u] push all servers to Cloud"))
 		fmt.Println(ui.Muted.Render("[c] copy           [v] vault  [h] history  [q] quit       [?] help"))
 		fmt.Println()
 
@@ -134,6 +135,25 @@ func runInteractive(c *cobra.Command, args []string) error {
 		case "h", "history":
 			if err := historyCmd.RunE(c, nil); err != nil {
 				printErr(err)
+			}
+			pause()
+		case "i", "import":
+			if _, err := importOpenSSH(c.Context(), "", false, false, false, false); err != nil {
+				printErr(err)
+			}
+			saved, err = ui.LoadVault()
+			if err != nil {
+				return err
+			}
+			pause()
+		case "u", "push", "cloud push":
+			cloudServerTarget, cloudIncludeKeys = "", false
+			if _, err := pushCloud(c.Context()); err != nil {
+				printErr(err)
+			}
+			saved, err = ui.LoadVault()
+			if err != nil {
+				return err
 			}
 			pause()
 		case "?", "help":
@@ -396,6 +416,8 @@ func printHelpReference() {
 	fmt.Println("  c          copy server details to clipboard")
 	fmt.Println("  v          show vault status")
 	fmt.Println("  h          connection history")
+	fmt.Println("  i          import concrete hosts from OpenSSH config")
+	fmt.Println("  u          encrypt and push all changed servers to Cloud")
 	fmt.Println("  q          quit")
 }
 

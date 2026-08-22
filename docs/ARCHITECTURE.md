@@ -11,6 +11,7 @@ ssher is a single Go binary. `main.go` delegates to the Cobra command tree in `c
 | `internal/vault` | AES-GCM format, Argon2id KDF, atomic files, and cached sessions |
 | `internal/ssh` | Authentication, host-key verification, jump host, sessions, keepalives, and forwarding |
 | `internal/transfer` | Native SFTP and external `rsync` integration |
+| `internal/openssh` | OpenSSH config discovery and canonical `ssh -G` resolution for portable imports |
 | `internal/pty` | Password-prompt handling used only by `ssher wrap`, backed by Unix PTYs or Windows ConPTY |
 | `internal/recording` | Asciicast v2 writing and replay |
 | `internal/ui` | Vault authentication, forms, tables, and styles |
@@ -39,7 +40,11 @@ The vault header stores the KDF parameters, salt, and nonce. A cached key must a
 5. Start keepalives, forwarding, and either an interactive PTY or command session.
 6. Record history and persist successful-connection metadata.
 
-The native stack intentionally does not interpret arbitrary `~/.ssh/config` directives. X11 and custom OpenSSH options are supported by `export-config`, not by native connections.
+`import-ssh-config` discovers concrete aliases and delegates OpenSSH precedence,
+`Include`, and `Match` evaluation to the installed `ssh -G`. It then stores the
+portable subset understood by the native stack. The native dialer still does
+not execute arbitrary OpenSSH directives; X11 and custom options remain
+available through `export-config` and external OpenSSH tools.
 
 ## Compatibility rules
 

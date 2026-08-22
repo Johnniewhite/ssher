@@ -148,8 +148,17 @@ ssher cloud link --organization my-team    # choose a workspace
 ssher cloud pull                            # decrypt cloud servers into this vault
 ssher cloud push                            # encrypt local changes and upload
 ssher cloud sync                            # pull, then push non-conflicting changes
+ssher cloud status                          # verify API, device, workspace, and pending changes
+ssher cloud import-ssh-config               # import OpenSSH hosts and push them in one step
 ssher cloud authorize-devices               # approve pending browser/device envelopes
 ```
+
+To migrate an existing OpenSSH inventory, run `ssher import-ssh-config`. It
+discovers concrete `Host` aliases (including `Include` files), asks the
+installed `ssh -G` to resolve OpenSSH's precedence rules, and imports the
+portable connection fields into the encrypted vault. Preview with `--dry-run`,
+refresh existing records with `--replace`, or add `--push` to send the result
+to the linked Cloud workspace immediately.
 
 Private-key file contents are not uploaded by default. Use `ssher cloud push
 --include-keys` only when the key itself should be shared; it is encrypted
@@ -168,7 +177,7 @@ The one exception is `ssher wrap`, which by definition wraps an arbitrary user-s
 
 | Limitation | Why | Workaround |
 | --- | --- | --- |
-| `~/.ssh/config` directives (`ProxyCommand`, `ControlMaster`, `Match`, etc.) aren't honoured | Native dial, no `ssh(1)` involvement | `ssher export-config` writes an `~/.ssh/config` snippet for tools that *do* read it |
+| Complex `~/.ssh/config` runtime directives (`ProxyCommand`, `ControlMaster`, `Match`, etc.) aren't honoured by native connections | The importer resolves hosts through `ssh -G`, but the vault stores only the portable connection subset | Keep complex directives in OpenSSH; `ssher export-config` writes a config snippet for external tools |
 | `rsync` requires SSH key auth | We shell out to `rsync(1)` and don't currently inject passwords into its child SSH | Use `ssher upload` / `ssher download` (SFTP) for password-auth servers |
 | X11 and arbitrary OpenSSH options are export-only | Native connections do not implement OpenSSH's X11/config machinery | Run `ssher export-config` and connect with OpenSSH when those options are required |
 | `rsync` is not included with Windows | ssher shells out to an existing `rsync` for directory synchronization | Use native `ssher upload` / `ssher download`, or install rsync through WSL/MSYS2 |
