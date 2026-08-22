@@ -97,7 +97,11 @@ $ ssher prod
     </div></section>
 
     <section class="network section" id="connectors"><div class="shell">
-      <div class="section-heading" data-reveal><span class="section-label">Private infrastructure</span><h2>No public IP?<br>No problem.</h2><p>Run the lightweight ssher Connector inside your VPC or private network. It creates an outbound encrypted path to Cloud, so your internal hosts stay internal.</p></div>
+      <div class="section-heading" data-reveal>
+        <span class="section-label">Private infrastructure</span>
+        <h2>No public IP? <br><span>No problem.</span></h2>
+        <p>Run the lightweight ssher Connector inside your VPC or private network. It creates an outbound encrypted path to Cloud, so your internal hosts stay internal.</p>
+      </div>
       <div class="network-stage" data-reveal><div class="network-zone cloud-zone"><small>SSHER CLOUD</small><div class="zone-core"><span>◇</span><p><b>Access plane</b><small>Identity · policy · sessions</small></p></div><div class="zone-team"><i>A</i><i>J</i><i>M</i><span>Platform team</span></div></div><div class="network-tunnel"><span>Outbound only</span><div><i></i><i></i><i></i></div><small>TLS tunnel</small></div><div class="network-zone vpc-zone"><small>YOUR PRIVATE NETWORK</small><div class="connector-node"><span>⌁</span><p><b>ssher Connector</b><small>Healthy · us-east-1</small></p></div><div class="private-hosts"><span><i></i>api.internal</span><span><i></i>db.internal</span><span><i></i>cache.internal</span></div></div></div>
       <div class="network-points"><p><span>01</span><b>Keep ports closed</b><small>No inbound firewall rule or public SSH endpoint required.</small></p><p><span>02</span><b>Scope by team</b><small>Control exactly which teams can reach each network and server.</small></p><p><span>03</span><b>Built for redundancy</b><small>Run multiple connectors and fail over automatically.</small></p></div>
     </div></section>
@@ -109,7 +113,24 @@ $ ssher prod
 
     <section class="film section"><div class="shell film-heading" data-reveal><span class="section-label">The launch film</span><h2>One conversation.<br>A new way into every server.</h2></div><div class="shell film-frame" data-reveal><video controls playsinline preload="metadata" poster="/ssher-cloud-poster.jpg"><source src="/ssher-cloud-launch.mp4" type="video/mp4">Your browser does not support the launch film.</video><span class="film-caption">ssher Cloud · 01:08</span></div></section>
 
-    <section class="install section" id="install"><div class="shell install-shell"><div class="install-copy" data-reveal><span class="section-label on-dark">Start local. Go anywhere.</span><h2>Your first connection<br>is one command away.</h2><p>Install the open-source CLI. Add Cloud whenever you want browser terminals, persistent sessions, and team access.</p></div><div class="install-console" data-reveal><div class="install-tabs" role="tablist" aria-label="Installation method"><button class="active" role="tab" aria-selected="true" data-command="irm https://getssher.com/install.ps1 | iex">Windows</button><button role="tab" aria-selected="false" data-command="brew tap johnniewhite/ssher && brew install ssher">Homebrew</button><button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button></div><div class="install-command"><span>$</span><code id="install-command">irm https://getssher.com/install.ps1 | iex</code><button class="copy-button" type="button" aria-label="Copy installation command">Copy</button></div><div class="install-meta"><span>✓ Checksum verified</span><span>MIT licensed</span><span>Intel + ARM</span></div></div></div></section>
+    <section class="install section" id="install">
+      <div class="shell install-shell">
+        <div class="install-copy" data-reveal>
+          <span class="section-label on-dark">Start local. Go anywhere.</span>
+          <h2>Your first connection <br><span>is one command away.</span></h2>
+          <p>Install the open-source CLI. Add Cloud whenever you want browser terminals, persistent sessions, and team access.</p>
+        </div>
+        <div class="install-console" data-reveal>
+          <div class="install-tabs" role="tablist" aria-label="Installation method">
+            <button class="active" role="tab" aria-selected="true" data-command="irm https://getssher.com/install.ps1 | iex">Windows</button>
+            <button role="tab" aria-selected="false" data-command="brew tap johnniewhite/ssher && brew install ssher">Homebrew</button>
+            <button role="tab" aria-selected="false" data-command="go install github.com/johnniewhite/ssher@latest">Go</button>
+          </div>
+          <div class="install-command"><span>$</span><code id="install-command">irm https://getssher.com/install.ps1 | iex</code><button class="copy-button" type="button" aria-label="Copy installation command">Copy</button></div>
+          <div class="install-meta"><span>✓ Checksum verified</span><span>MIT licensed</span><span>Intel + ARM</span></div>
+        </div>
+      </div>
+    </section>
 
     <section class="final-cta section"><div class="shell" data-reveal><span class="final-symbol">&gt;_</span><h2>There is always<br>another way in.</h2><p>Your terminal. Your browser. Your team. One encrypted command center.</p><div><a class="button button-dark button-large" href="#install">Install ssher <span>↓</span></a><a class="button button-light button-large" href="https://cloud.getssher.com">Open Cloud <span>↗</span></a></div></div></section>
   </main>

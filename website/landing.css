@@ -249,6 +249,9 @@ h1, h2, h3, p { margin-top: 0; }
 .section-heading { display: grid; grid-template-columns: 1fr 1.1fr .9fr; align-items: end; gap: 45px; }
 .section-heading h2 { margin: 0; font: 700 clamp(58px, 6vw, 92px)/.95 Manrope, sans-serif; letter-spacing: -.065em; }
 .section-heading > p { margin: 0; color: #70766e; font-size: 14px; line-height: 1.7; }
+.network .section-heading { grid-template-columns: 1.35fr .65fr; gap: 30px 80px; }
+.network .section-heading .section-label { grid-column: 1 / -1; }
+.network .section-heading > p { max-width: 440px; justify-self: end; }
 .network-stage { min-height: 430px; margin-top: 90px; padding: 36px; display: grid; grid-template-columns: 1fr 210px 1fr; align-items: stretch; gap: 15px; background: #e7e6df; border: 1px solid #d8d7cf; border-radius: 27px; }
 .network-zone { position: relative; padding: 28px; border-radius: 19px; }
 .network-zone > small { font: 600 6px DM Mono, monospace; letter-spacing: 1.1px; }
@@ -313,18 +316,20 @@ h1, h2, h3, p { margin-top: 0; }
 .film-caption { position: absolute; right: 20px; bottom: 20px; padding: 9px 12px; color: #dfe2df; background: rgba(8, 10, 8, .66); border: 1px solid rgba(255, 255, 255, .12); border-radius: 99px; font-size: 7px; backdrop-filter: blur(10px); }
 
 .install { color: #fff; background: #111311; border-top: 1px solid rgba(255, 255, 255, .08); }
-.install-shell { padding: 85px; display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 90px; background: radial-gradient(circle at 90% 0, rgba(103, 116, 255, .3), transparent 32%), radial-gradient(circle at 0 100%, rgba(216, 255, 79, .15), transparent 30%), #1a1d1b; border: 1px solid rgba(255, 255, 255, .1); border-radius: 30px; }
-.install-copy h2 { margin: 26px 0 22px; font: 700 clamp(47px, 4.6vw, 70px)/1 Manrope, sans-serif; letter-spacing: -.06em; }
-.install-copy p { color: #919792; font-size: 13px; line-height: 1.7; }
+.install-shell { padding: 85px; display: grid; grid-template-columns: 1fr; gap: 58px; background: radial-gradient(circle at 90% 0, rgba(103, 116, 255, .3), transparent 32%), radial-gradient(circle at 0 100%, rgba(216, 255, 79, .15), transparent 30%), #1a1d1b; border: 1px solid rgba(255, 255, 255, .1); border-radius: 30px; }
+.install-copy { display: grid; grid-template-columns: 1.35fr .65fr; align-items: end; gap: 28px 70px; }
+.install-copy .section-label { grid-column: 1 / -1; }
+.install-copy h2 { margin: 0; font: 700 clamp(58px, 5vw, 80px)/.96 Manrope, sans-serif; letter-spacing: -.065em; }
+.install-copy p { max-width: 390px; margin: 0 0 5px; color: #a2a8a3; font-size: 14px; line-height: 1.75; }
 .install-console { overflow: hidden; background: #0b0f0c; border: 1px solid #394039; border-radius: 17px; box-shadow: 0 35px 70px rgba(0, 0, 0, .35); }
-.install-tabs { padding: 11px; display: flex; gap: 5px; background: #141916; border-bottom: 1px solid #292f2a; }
-.install-tabs button { padding: 9px 13px; color: #727a74; background: transparent; border: 0; border-radius: 7px; cursor: pointer; font-size: 7px; }
+.install-tabs { padding: 12px; display: flex; gap: 6px; background: #141916; border-bottom: 1px solid #292f2a; }
+.install-tabs button { padding: 10px 16px; color: #727a74; background: transparent; border: 0; border-radius: 8px; cursor: pointer; font-size: 9px; }
 .install-tabs button.active { color: #e7ece8; background: #252c27; }
-.install-command { min-height: 105px; padding: 25px; display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 9px; }
-.install-command > span { color: var(--acid); font: 9px DM Mono, monospace; }
-.install-command code { overflow-x: auto; color: #d9e0db; font: 8px/1.5 DM Mono, monospace; white-space: nowrap; }
-.copy-button { padding: 8px 10px; color: #a3ada6; background: #1b211d; border: 1px solid #303831; border-radius: 7px; cursor: pointer; font-size: 6px; }
-.install-meta { padding: 15px 25px; display: flex; justify-content: space-between; color: #657169; background: #101511; border-top: 1px solid #252c27; font-size: 6px; }
+.install-command { min-height: 145px; padding: 32px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 13px; }
+.install-command > span { color: var(--acid); font: 13px DM Mono, monospace; }
+.install-command code { overflow-x: auto; color: #d9e0db; font: 12px/1.5 DM Mono, monospace; white-space: nowrap; }
+.copy-button { padding: 10px 14px; color: #a3ada6; background: #1b211d; border: 1px solid #303831; border-radius: 8px; cursor: pointer; font-size: 8px; }
+.install-meta { padding: 17px 32px; display: flex; justify-content: space-between; color: #657169; background: #101511; border-top: 1px solid #252c27; font-size: 8px; }
 .install-meta span:first-child { color: #8cab73; }
 
 .final-cta { text-align: center; background: #f4f3ef; }
@@ -394,18 +399,41 @@ h1, h2, h3, p { margin-top: 0; }
   .operator-copy { max-width: 570px; }
   .section-heading { grid-template-columns: 1fr; gap: 25px; }
   .section-heading > p { max-width: 600px; }
-  .network-stage { padding: 22px; grid-template-columns: 1fr; }
-  .network-tunnel { min-height: 90px; }
-  .network-tunnel > div { width: 1px; height: 60px; margin: 10px 0; }
-  .network-tunnel > div i { top: auto; left: -3px !important; }
-  .network-tunnel > div i:nth-child(1) { top: 5%; }
-  .network-tunnel > div i:nth-child(2) { top: 47%; }
-  .network-tunnel > div i:nth-child(3) { top: 90%; }
-  .network-points { grid-template-columns: 1fr; }
-  .network-points p { border-right: 0; border-bottom: 1px solid #d3d3cc; }
+  .network .section-heading { grid-template-columns: 1fr; align-items: start; gap: 22px; }
+  .network .section-heading .section-label { grid-column: auto; }
+  .network .section-heading h2 { font-size: clamp(58px, 9vw, 72px); }
+  .network .section-heading > p { max-width: 570px; padding-top: 0; justify-self: start; font-size: 13px; }
+  .network-stage { min-height: 340px; margin-top: 52px; padding: 18px; grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr); gap: 8px; border-radius: 23px; }
+  .network-zone { padding: 20px 17px; border-radius: 16px; }
+  .network-zone > small { font-size: 7px; }
+  .zone-core, .connector-node { width: 100%; min-height: 76px; margin-top: 48px; padding: 13px; gap: 10px; }
+  .zone-core > span, .connector-node > span { width: 38px; height: 38px; flex: 0 0 38px; }
+  .zone-core b, .connector-node b { font-size: 10px; }
+  .zone-core small, .connector-node small { font-size: 7px; }
+  .zone-team { margin-top: 48px; }
+  .zone-team span { font-size: 8px; }
+  .network-tunnel { min-height: 0; font-size: 7px; }
+  .network-tunnel > div { width: 100%; height: 1px; margin: 14px 0; }
+  .network-tunnel > div i { top: -3px; }
+  .private-hosts { margin-top: 30px; }
+  .private-hosts span { padding: 8px; font-size: 6.5px; }
+  .network-points p { padding: 24px 18px; grid-template-columns: 24px 1fr; gap: 7px 9px; }
+  .network-points b { font-size: 10px; }
+  .network-points small { font-size: 7.5px; }
   .security-visual { height: 520px; order: 2; }
   .film-heading { grid-template-columns: 1fr; gap: 28px; }
-  .install-shell { padding: 55px 42px; gap: 50px; }
+  .install-shell { padding: 52px 42px; gap: 36px; }
+  .install-copy { max-width: 100%; grid-template-columns: 1fr; gap: 18px; }
+  .install-copy .section-label { grid-column: auto; }
+  .install-copy h2 { max-width: 600px; }
+  .install-copy p { max-width: 520px; margin-bottom: 0; }
+  .install-tabs { padding: 9px; gap: 6px; }
+  .install-tabs button { padding: 10px 15px; font-size: 9px; }
+  .install-command { min-height: 112px; padding: 24px; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 12px; }
+  .install-command > span { font-size: 12px; }
+  .install-command code { font-size: 10px; }
+  .copy-button { padding: 9px 12px; font-size: 8px; }
+  .install-meta { padding: 15px 24px; font-size: 7.5px; }
   .footer-main { grid-template-columns: 1.4fr 1fr 1fr; }
   .footer-main > div:last-child { grid-column: 2; }
 }
@@ -455,9 +483,20 @@ h1, h2, h3, p { margin-top: 0; }
   .operator-plan footer button { justify-content: space-between; }
   .operator-insight { margin-left: 15px; }
   .section-heading h2, .security-copy h2, .film-heading h2, .install-copy h2 { font-size: 48px; }
-  .network-stage { margin-top: 55px; padding: 13px; border-radius: 20px; }
+  .network .section-heading { grid-template-columns: 1fr; gap: 19px; }
+  .network .section-heading .section-label { grid-column: auto; }
+  .network .section-heading h2 { font-size: 48px; }
+  .network .section-heading > p { padding-top: 0; font-size: 13px; }
+  .network-stage { margin-top: 55px; padding: 13px; grid-template-columns: 1fr; border-radius: 20px; }
   .network-zone { padding: 20px 14px; }
-  .network-points p { padding: 24px 8px; }
+  .network-tunnel { min-height: 90px; }
+  .network-tunnel > div { width: 1px; height: 60px; margin: 10px 0; }
+  .network-tunnel > div i { top: auto; left: -3px !important; }
+  .network-tunnel > div i:nth-child(1) { top: 5%; }
+  .network-tunnel > div i:nth-child(2) { top: 47%; }
+  .network-tunnel > div i:nth-child(3) { top: 90%; }
+  .network-points { grid-template-columns: 1fr; }
+  .network-points p { padding: 24px 8px; border-right: 0; border-bottom: 1px solid #d3d3cc; }
   .security-visual { height: 450px; }
   .key-device, .encrypted-record { width: 180px; }
   .key-device { top: 37%; left: 6%; }
@@ -466,10 +505,15 @@ h1, h2, h3, p { margin-top: 0; }
   .film-frame { width: calc(100% - 20px); margin-top: 45px; }
   .film-frame video { border-radius: 16px; }
   .install-shell { width: calc(100% - 20px); padding: 45px 20px; border-radius: 22px; }
-  .install-command { padding: 17px 12px; grid-template-columns: 12px 1fr; }
-  .install-command code { font-size: 6px; }
-  .copy-button { grid-column: 2; justify-self: start; }
-  .install-meta { padding: 13px; flex-wrap: wrap; gap: 8px; }
+  .install-tabs { overflow-x: auto; }
+  .install-copy h2 { font-size: 40px; }
+  .install-copy h2 br { display: none; }
+  .install-tabs button { padding: 9px 12px; font-size: 8px; }
+  .install-command { min-height: 108px; padding: 18px 14px; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; }
+  .install-command > span { font-size: 10px; }
+  .install-command code { font-size: 8px; }
+  .copy-button { grid-column: 2; justify-self: start; padding: 8px 11px; font-size: 7px; }
+  .install-meta { padding: 14px; flex-wrap: wrap; gap: 8px 14px; font-size: 7px; }
   .final-cta h2 { font-size: 60px; }
   .final-cta > div > div { align-items: stretch; flex-direction: column; }
   .footer-main { grid-template-columns: 1fr 1fr; gap: 40px; }
