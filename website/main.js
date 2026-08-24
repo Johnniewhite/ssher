@@ -1,3 +1,5 @@
+import("/analytics.js");
+
 const installTabs = document.querySelectorAll(".install-tabs button");
 const installCommand = document.getElementById("install-command");
 const copyButton = document.querySelector(".copy-button");
