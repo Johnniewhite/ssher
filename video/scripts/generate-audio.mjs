@@ -7,7 +7,7 @@ const outputDir = path.join(here, "..", "public", "audio");
 fs.mkdirSync(outputDir, { recursive: true });
 
 const sampleRate = 44100;
-const duration = 30;
+const duration = 45;
 const length = sampleRate * duration;
 const left = new Float32Array(length);
 const right = new Float32Array(length);
@@ -136,46 +136,28 @@ const blip = (start, freq = 880, amp = 0.12, pan = 0) => {
 
 // Original interface sound design layered over the licensed music bed. Keeping
 // these cues deterministic makes message, terminal, and transition timing exact.
-noise({
-  start: 0,
-  dur: 9.6,
-  amp: 0.018,
-  attack: 0.2,
-  release: 0.5,
-  lowpass: 0.06,
-});
-const messageTimes = [1.27, 3.4, 5.53, 7.53, 23.67, 25.07, 26.17];
-messageTimes.forEach((time, index) => {
-  const incoming = index !== 1 && index !== 4;
-  sine({
-    start: time,
-    dur: 0.23,
-    freq: incoming ? 720 : 930,
-    endFreq: incoming ? 1010 : 1220,
-    amp: 0.15,
-    pan: incoming ? -0.34 : 0.34,
-    release: 0.17,
-    harmonics: 0.35,
-  });
-  sine({
-    start: time + 0.08,
-    dur: 0.2,
-    freq: incoming ? 1080 : 1390,
-    amp: 0.08,
-    pan: incoming ? -0.2 : 0.2,
-    release: 0.18,
-  });
-});
+noise({ start: 0, dur: 4.4, amp: 0.014, attack: 0.2, release: 0.6, lowpass: 0.05 });
 
-whoosh(9.35, 0.85, 0.26, 0.25);
-impact(9.78, 0.62);
-whoosh(22.65, 0.75, 0.2, -0.25);
-impact(23.0, 0.38);
-whoosh(27.05, 0.8, 0.25, 0);
-impact(27.48, 0.74);
+// Scene transitions land on the score's larger musical phrases.
+whoosh(3.85, 0.78, 0.2, 0.2);
+impact(4.18, 0.46);
+whoosh(10.65, 0.82, 0.22, -0.2);
+impact(11.03, 0.54);
+whoosh(19.15, 0.78, 0.2, 0.25);
+impact(19.5, 0.43);
+whoosh(30.0, 0.9, 0.22, -0.22);
+impact(30.42, 0.5);
+whoosh(37.0, 0.9, 0.25, 0.15);
+impact(37.42, 0.62);
+whoosh(41.0, 0.95, 0.26, 0);
+impact(41.42, 0.78);
 
-// Keyboard taps and a rising confirmation tone for the service restart.
-for (let t = 14.15, index = 0; t < 16.72; t += 0.105, index++) {
+// Product UI detail: device arrivals, encrypted sync, clicks and approvals.
+[4.9, 5.55, 6.2, 12.8, 14.1, 15.6, 31.1, 33.0, 34.7].forEach((time, index) =>
+  blip(time, 520 + (index % 4) * 90, 0.055, Math.sin(index) * 0.35),
+);
+
+for (let t = 20.9, index = 0; t < 23.15; t += 0.095, index++) {
   noise({
     start: t,
     dur: 0.025,
@@ -186,7 +168,7 @@ for (let t = 14.15, index = 0; t < 16.72; t += 0.105, index++) {
   });
 }
 sine({
-  start: 18.02,
+  start: 27.25,
   dur: 0.4,
   freq: 620,
   endFreq: 980,
@@ -196,7 +178,7 @@ sine({
   harmonics: 0.28,
 });
 sine({
-  start: 18.14,
+  start: 27.37,
   dur: 0.38,
   freq: 930,
   endFreq: 1320,
@@ -205,22 +187,20 @@ sine({
   release: 0.3,
 });
 
-for (let t = 27.45, i = 0; t < 29.45; t += 0.25, i++) {
-  blip(
-    t,
-    293.66 * Math.pow(2, (i % 8) / 12),
-    0.035 + i * 0.003,
-    Math.sin(i) * 0.45,
-  );
+// Detach/resume and final brand resolve.
+sine({ start: 34.45, dur: 0.28, freq: 560, endFreq: 840, amp: 0.09, release: 0.23 });
+sine({ start: 36.25, dur: 0.42, freq: 720, endFreq: 1180, amp: 0.11, release: 0.36 });
+for (let t = 41.42, i = 0; t < 44.3; t += 0.31, i++) {
+  blip(t, 293.66 * Math.pow(2, (i % 8) / 12), 0.027 + i * 0.002, Math.sin(i) * 0.4);
 }
-sine({ start: 27.48, dur: 2.25, freq: 293.66, amp: 0.07, release: 2.1 });
+sine({ start: 41.42, dur: 3.1, freq: 293.66, amp: 0.055, release: 2.9 });
 sine({
-  start: 27.48,
-  dur: 2.25,
+  start: 41.42,
+  dur: 3.1,
   freq: 440,
-  amp: 0.045,
+  amp: 0.035,
   attack: 0.01,
-  release: 2.1,
+  release: 2.9,
   pan: 0.25,
 });
 

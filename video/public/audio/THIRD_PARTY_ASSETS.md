@@ -1,14 +1,14 @@
 # Third-party audio
 
-## Driving Ambition
+## Dreaming Big
 
 - Artist: Ahjay Stelino
-- Source catalogue: https://mixkit.co/free-stock-music/
-- Download: https://assets.mixkit.co/music/32/32.mp3
+- Source catalogue: https://mixkit.co/free-stock-music/mood/confident/
+- Download: https://assets.mixkit.co/music/31/31.mp3
 - License: Mixkit Stock Music Free License
-- License page: https://mixkit.co/license/
-- Downloaded: 2026-08-20
-- SHA-256: `e3c88488e65b8c87a6f06120983ce2cb12ea3aeba99f8cadb7ee5d6d284ef2c6`
+- License page: https://mixkit.co/license/#musicFree
+- Downloaded: 2026-08-24
+- SHA-256: `8c89819547b42a80750fb25f37a960a1f45f6fd66bc8d784ac817b98b002897c`
 
 Mixkit permits its free stock music in website, social-media, music-video, and
 online-advertising video projects. Attribution is appreciated but not required.

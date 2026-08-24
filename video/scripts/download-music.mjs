@@ -3,16 +3,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const source = "https://assets.mixkit.co/music/32/32.mp3";
+const source = "https://assets.mixkit.co/music/31/31.mp3";
 const expectedHash =
-  "e3c88488e65b8c87a6f06120983ce2cb12ea3aeba99f8cadb7ee5d6d284ef2c6";
+  "8c89819547b42a80750fb25f37a960a1f45f6fd66bc8d784ac817b98b002897c";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(
   here,
   "..",
   "public",
   "audio",
-  "mixkit-driving-ambition-32.mp3",
+  "mixkit-dreaming-big-31.mp3",
 );
 
 const sha256 = (contents) =>

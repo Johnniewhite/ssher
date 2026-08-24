@@ -7,3 +7,4 @@ build
 # Ignore the output video from Git but not videos you import into src/.
 out
 /public/audio/mixkit-driving-ambition-32.mp3
+/public/audio/mixkit-dreaming-big-31.mp3

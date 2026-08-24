@@ -1,24 +1,24 @@
-# ssher Cloud announcement film
+# ssher Cloud launch film
 
-The Remotion source for the 30-second ssher Cloud announcement film. The
-composition is 1920×1080 at 30fps and tells the launch story through a familiar
-mobile group conversation before opening into the browser terminal experience.
+The Remotion source for the 45-second ssher Cloud launch film. The composition
+is 1920×1080 at 30fps and presents the real product promise through cinematic
+product footage: cross-device access, encrypted workspace sync, browser SSH,
+AI-assisted incident recovery, persistent sessions, and team control.
 
-The soundtrack combines the licensed cinematic track “Driving Ambition” by
-Ahjay Stelino with original, deterministic interface sound design generated
-from code as 44.1kHz stereo PCM. The custom layer contains distinct
-incoming/outgoing message tones, keyboard detail, transitions, and a
-service-restart confirmation. See `public/audio/THIRD_PARTY_ASSETS.md` for the
-music source, license, and integrity hash.
+The soundtrack uses the late orchestral build of the licensed piano-and-strings
+film score “Dreaming Big” by Ahjay Stelino, layered with original, deterministic
+interface sound design generated from code as 44.1kHz stereo PCM. See
+`public/audio/THIRD_PARTY_ASSETS.md` for the source, license, and integrity hash.
 
 ## Storyboard
 
-1. An urgent production message arrives in the team chat.
-2. A teammate is away from their laptop.
-3. ssher Cloud arrives in the conversation.
-4. The browser terminal connects to production and restores the service.
-5. The team leaves the terminal running and can resume it later.
-6. The product promise resolves: “Your servers. Right where you left them.”
+1. The old constraint breaks: your servers do not live at your desk.
+2. One encrypted session appears across laptop, tablet, and phone.
+3. The monochrome workspace brings server and team access into one view.
+4. A browser terminal and AI operator investigate and recover a live incident.
+5. The session detaches from one device and resumes on another.
+6. Zero-knowledge encryption, team control, and activity history resolve into
+   the launch promise: “Every server. Any screen. Exactly where you left it.”
 
 ## Develop
 
